@@ -1,0 +1,54 @@
+{   "Scenario": "test2",
+    "Metadata": {},
+    "start_delta": 15,
+    "start_on_minute": false,
+	"topology_filename": "test2_topo.csv",
+	"topology_filename_UNUSED": "test1_topo.xlsx",
+    	"topology_sheetname_UNUSED": "Sheet1",
+    	"networks": {
+        "ab": {
+            "network": "10.44.3.0/24",
+            "gateway": "10.44.3.254"
+        },
+        "bc": {
+            "network": "10.45.7.0/24",
+            "gateway": "10.45.7.254"
+        }
+    },
+    "node_configs": {
+        "__global": {
+            "mounts": [["mounts/global", "/netem/mounts/global"]]
+        },
+        "node_a": {
+            "container_image": "quay.io/frrouting/frr:9.0.2",
+            "ipv4_addresses": [["ab", "10.44.3.1"]],
+            "mounts": [["mounts/node_a/node_a", "/netem/mounts/node_a"], ["mounts/node_a/etc_frr", "/etc/frr"]],
+            "working_dir": "/netem/mounts/node_a",
+            "capabilities": ["NET_ADMIN", "NET_RAW" , "SYS_ADMIN=p"]
+        },
+        "node_b": {
+            "container_image": "quay.io/frrouting/frr:9.0.2",
+            "ipv4_addresses": [["ab", "10.44.3.2"], ["bc", "10.45.7.1"]],
+            "mounts": [["mounts/node_b/node_b", "/netem/mounts/node_b"], ["mounts/node_b/etc_frr", "/etc/frr"]],
+            "working_dir": "/netem/mounts/node_b",
+            "capabilities": ["NET_ADMIN", "NET_RAW" , "SYS_ADMIN=p"]
+        },
+        "node_c": {
+            "container_image": "quay.io/frrouting/frr:9.0.2",
+            "ipv4_addresses": [["bc", "10.45.7.2"]],
+            "mounts": [["mounts/node_c/node_c", "/netem/mounts/node_c"], ["mounts/node_c/etc_frr", "/etc/frr"]],
+            "working_dir": "/netem/mounts/node_c",
+            "capabilities": ["NET_ADMIN", "NET_RAW" , "SYS_ADMIN=p"]
+        }
+    },
+    "commands": [
+        {"time": -10, "nodes": ["*"],     "command": "/netem/mounts/global/setup_ospf.py"},
+	{"time": 5,   "nodes": ["node_a_DISABLED"], "command": "date > /netem/mounts/node_a/ssa.out"},
+	{"time": 10,  "nodes": ["node_a_DISABLED"], "command": "/netem/netem_tools/set_static_arp.py --node node_b --network ab --verbose >> /netem/mounts/node_a/ssa.out && sleep 1 && date >> /netem/mounts/node_a/ssa.out && arp -a >> /netem/mounts/node_a/ssa.out"},
+	{"time": 40,  "nodes": ["node_a"], "command": "/netem/netem_tools/set_static_arp.py --node node_b --network ab --verbose >> /netem/mounts/node_a/ssa.out && sleep 1 && date >> /netem/mounts/node_a/ssa.out && arp -a >> /netem/mounts/node_a/ssa.out"},
+	{"time": 40,  "nodes": ["node_b"], "command": "/netem/netem_tools/set_static_arp.py --node node_a --network ab"},
+	{"time": 40,  "nodes": ["node_b"], "command": "/netem/netem_tools/set_static_arp.py --node node_c --network bc"},
+	{"time": 40,  "nodes": ["node_c"], "command": "/netem/netem_tools/set_static_arp.py --node node_b --network bc"},
+	{"time": 30,  "nodes": ["node_a_DISABLED"], "command": "arp -a &>> /netem/mounts/node_a/ssa.out"}
+    ]
+}

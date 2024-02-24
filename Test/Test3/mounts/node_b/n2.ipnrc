@@ -1,0 +1,5 @@
+# PLAN_LTP
+a plan 1 ltp/1
+a plan 2 udp/127.0.0.1:4556
+a plan 3 tcp/10.45.7.2:4556
+

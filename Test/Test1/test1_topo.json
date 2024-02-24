@@ -1,0 +1,152 @@
+[
+    {
+        "time": 0,
+        "link_changes": [
+        {
+            "source": "node_a",  "dest": "node_b",  "delay": "0s",  "rate": "100kbit", "loss": "0"
+        },
+        {
+            "source": "node_b",  "dest": "node_a",  "delay": "0s",  "rate": "150kbit", "loss": "0"
+        }
+        ]
+    },
+    {
+        "time": 30,
+        "link_changes": [
+        {
+            "source": "node_a",
+            "dest":  "node_b",
+            "delay": "0s",
+            "rate":  "100kbit",
+            "loss":  "0"
+        },
+        {
+            "source": "node_b",
+            "dests": [
+                {
+                    "dest":  "node_a",
+                    "delay": "4s",
+                    "rate":  "150kbit",
+                    "loss":  "0"
+                },
+                {
+                    "dest":  "node_c",
+                    "delay": "2s",
+                    "rate":  "50kbit",
+                    "loss":  "0"
+                }
+            ]
+        },
+        {
+            "source": "node_c",
+            "dest": "node_b",
+            "delay": "1s",
+            "rate": "100kbit",
+            "loss": "0"
+        }
+        ]
+    },
+    {
+        "time": 60,
+        "link_changes": [
+        {
+            "source": "node_a",
+            "dest":  "node_b"
+        },
+        {
+            "source": "node_b",
+            "dests": [
+                {
+                    "dest":  "node_a"
+                },
+                {
+                    "dest":  "node_c"
+                }
+            ]
+        },
+        {
+            "source": "node_c",
+            "dest": "node_b"
+        }
+        ]
+    },
+    {
+        "time": 90,
+        "link_changes": [
+        {
+            "source": "node_a",
+            "dest":  "node_b",
+            "delay": "500ms",
+            "rate":  "100kbit",
+            "loss":  "0"
+        },
+        {
+            "source": "node_b",
+            "dests": [
+                {
+                    "dest":  "node_a",
+                    "delay": "2s",
+                    "rate":  "150kbit",
+                    "loss":  "0"
+                },
+                {
+                    "dest":  "node_c",
+                    "delay": "1400ms",
+                    "rate":  "200kbit",
+                    "loss":  "0"
+                }
+            ]
+        },
+        {
+            "source": "node_c",
+            "dest": "node_a",
+            "delay": "1s",
+            "rate": "100kbit",
+            "loss": "0"
+        }
+        ]
+    },
+    {
+        "time": 120,
+        "link_changes": [
+        {
+            "source": "node_a",
+            "dest": "node_b",
+            "delay": "0.5s",
+            "rate": "100kbit",
+            "loss": "0"
+        },
+        {
+            "source": "node_b",
+            "dest": "node_a",
+            "delay": "0.5s",
+            "rate": "150kbit",
+            "loss": "0"
+        }
+        ]
+    },
+    {
+        "time": 150,
+        "link_changes": [
+        {
+            "source": "node_a",
+            "dest":  "node_b"
+        },
+        {
+            "source": "node_b",
+            "dests": [
+                {
+                    "dest":  "node_a"
+                },
+                {
+                    "dest":  "node_c"
+                }
+            ]
+        },
+        {
+            "source": "node_c",
+            "dest": "node_b"
+        }
+        ]
+    }
+]

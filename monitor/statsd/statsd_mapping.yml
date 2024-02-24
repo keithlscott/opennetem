@@ -1,0 +1,19 @@
+mappings:
+- match: "test.dispatcher.*.*.*"
+  name: "dispatcher_events_total"
+  labels:
+    processor: "$1"
+    action: "$2"
+    outcome: "$3"
+    job: "test_dispatcher"
+- match: "netemcontroller.*.*"
+  name: "netem_controller"
+  labels:
+    host: "$1"
+    var: "$2"
+- match: "*.signup.*.*"
+  name: "signup_events_total"
+  labels:
+    provider: "$2"
+    outcome: "$3"
+    job: "${1}_server"

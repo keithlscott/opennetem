@@ -1,0 +1,30 @@
+﻿Time,   Source,     Dest,       delay,      rate
+0,      node_a,     node_b,     0s,         100kbit
+,       node_b,     node_a,     0s,         150kbit
+30,     node_a,     node_b,     3s,         100kbit
+,       node_b,     node_a,     4s,         150kbit
+,       ,           node_c,     2s,         50kbit
+,       node_c,     node_b,     1s,         100kbit
+60,     node_a,     node_b,     ,
+,       node_b,     node_a,     ,
+,       node_b,     node_c,     ,
+,       node_c,     node_b,     ,
+90,     node_a,     node_b,     500ms,      100kbit
+,       node_b,     node_c,     1400ms,     200kbit
+,       ,           node_a,     2s,         150kbit
+,       node_c,     node_a,     1s,         100kbits
+120,    node_a,     node_b,     0.5s,       100kbit
+,       node_b,     node_a,     0.5s,       150kbit
+150,    node_a,     node_b,     ,
+,       node_b,     node_a,     ,
+,       node_b,     node_c,     ,
+,       node_c,     node_b,     500ms,      100kbit
+,       node_b,     node_c,     1400ms,     200kbit
+,       ,           node_a,     2s,         150kbit
+,       node_c,     node_a,     1s,         100kbits
+120,    node_a,     node_b,     0.5s,       100kbit
+,       node_b,     node_a,     0.5s,       150kbit
+150,    node_a,     node_b,     ,
+,       node_b,     node_a,     ,
+,       node_b,     node_c,     ,
+,       node_c,     node_b,     ,

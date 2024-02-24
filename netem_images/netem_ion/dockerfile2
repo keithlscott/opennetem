@@ -1,0 +1,27 @@
+#
+# Copyright (C) 2024 Keith Scott <keithlscott@gmail.com>
+# GNU Public License Version 3, 29 June 2007
+#
+
+FROM ubuntu
+
+RUN apt -y update
+RUN apt -y install gcc g++ automake libtool make perl unzip
+# RUN ln -s /usr/bin/make /usr/bin/gmake
+
+# This can be overriddent by passing --build-arg ION_VERSION=XXXXX
+# to the docker build command.
+ARG ION_VERSION=4.1.2
+ARG ION_DIR=ION-DTN-ion-open-source-${ION_VERSION}
+
+ADD https://github.com/nasa-jpl/ION-DTN/archive/refs/tags/ion-open-source-4.1.2.tar.gz /tmp/ion-open-source-${ION_VERSION}.tar.gz
+
+#
+# ION zipfile is now in /tmp
+#
+WORKDIR /tmp/
+RUN ls
+RUN tar -xzf ion-open-source-${ION_VERSION}.tar.gz
+WORKDIR /tmp/${ION_DIR}
+RUN autoreconf -fi
+RUN ./configure && make && make install

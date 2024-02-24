@@ -1,0 +1,70 @@
+# FILE: n3.bprc
+# CONTENT: Bundle Protocol management commands file
+# FOR: bpadmin
+# BUILDER: ION Configuration Editor
+# NETWORK: Exercise_2A
+# NODE: undefined
+# DATE: 2018-10-02 15:10
+#
+# INITIALIZE
+1
+#
+# SCHEME
+# [1] scheme name : ipn [Interplanetary Overlay Network Scheme]
+# [2] forwarder command : ipnfw [ION Forwarder]
+# [3] admin app command : ipnadminep [ION Admin Endpoints]
+a scheme ipn 'ipnfw' 'ipnadminep'
+
+# ENDPOINT
+# [1] node num : 1
+# [2] service num : 1 [BP Echo]
+# [3] bundle disposition : x [discard undeliverable bundles]
+# [4] queue receiver task :
+a endpoint ipn:3.1 x
+a endpoint ipn:3.2 x
+a endpoint ipn:3.3 x
+a endpoint ipn:3.4 x
+a endpoint ipn:3.5 x
+a endpoint ipn:3.6 x
+
+# PROTOCOL
+a protocol tcp 1400 100 1000000
+
+###################################
+#
+# TCP for comms with node 2
+#
+# PROTOCOL
+a protocol tcp 1400 100 1000000
+
+# INDUCT
+a induct tcp 0.0.0.0 tcpcli
+
+#OUTDUCT
+a outduct tcp 10.45.7.1:4556 tcpclo
+###################################
+
+###################################
+#
+# UDP for loopback communications
+#
+# PROTOCOL
+# [1] protocol name : udp
+# [2] dest
+a protocol udp 1400 100 1000000
+
+#
+# INDUCT_UDP
+a induct udp 0.0.0.0:4556 udpcli
+
+#
+# OUTDUCT_UDP
+a outduct udp 127.0.0.1:4556 udpclo
+###################################
+
+r 'ipnadmin n3.ipnrc'
+
+#
+# START
+w 1
+s

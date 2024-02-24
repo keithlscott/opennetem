@@ -1,0 +1,86 @@
+# INITIALIZE
+1
+
+#
+# SCHEME
+# [1] scheme name : ipn [Interplanetary Overlay Network Scheme]
+# [2] forwarder command : ipnfw [ION Forwarder]
+# [3] admin app command : ipnadminep [ION Admin Endpoints]
+a scheme ipn 'ipnfw' 'ipnadminep'
+
+#
+# ENDPOINT
+# [1] node num : 2
+# [2] service num : 1 [BP Echo]
+# [3] bundle disposition : x [discard undeliverable bundles]
+# [4] queue receiver task :
+a endpoint ipn:2.1 x
+a endpoint ipn:2.2 x
+a endpoint ipn:2.3 x
+a endpoint ipn:2.4 x
+a endpoint ipn:2.5 x
+
+###################################
+#
+# LTP for comms with node 1
+#
+# PROTOCOL
+# [1] protocol name : ltp [Licklider Transmission Protocol]
+# [2] payload bytes per frame : 1400 (bytes)
+# [3] overhead bytes per frame : 100 (bytes)
+# [4] nominal data rate : 1000000 (bytes per sec)
+a protocol ltp 1400 100 1000000
+#
+
+# INDUCT_LTP
+# [1] ltp duct name : 2
+# [2] ltp cli task name : ltpcli
+a induct ltp 2 ltpcli
+
+# OUTDUCT_LTP
+# [1] ltp duct name : 1
+# [2] ltp clo task name : ltpclo
+# [3] max payload length : (bytes)
+a outduct ltp 1 ltpclo 1500
+#
+###################################
+
+###################################
+#
+# TCP for comms with node 3
+#
+# PROTOCOL
+a protocol tcp 1400 100 1000000
+
+# INDUCT
+a induct tcp 0.0.0.0 tcpcli
+
+#OUTDUCT
+a outduct tcp 10.45.7.2:4556 tcpclo
+###################################
+
+
+###################################
+#
+# UDP for loopback communications
+#
+# PROTOCOL
+# [1] protocol name : udp
+# [2] dest
+a protocol udp 1400 100 1000000
+
+#
+# INDUCT_UDP
+a induct udp 0.0.0.0:4556 udpcli
+
+#
+# OUTDUCT_UDP
+a outduct udp 127.0.0.1:4556 udpclo
+###################################
+
+r 'ipnadmin n2.ipnrc'
+
+#
+# START
+w 0
+s

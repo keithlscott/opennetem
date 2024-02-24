@@ -1,0 +1,29 @@
+# FILE: n1.ltprc
+# CONTENT: Licklider Transmission Protocol management commands file
+# FOR: ltpadmin
+# BUILDER: ION Configuration Editor
+# NETWORK: Exercise_2A
+# NODE: undefined
+# DATE: 2018-10-02 15:10
+#
+# INITIALIZE
+# [1] est max export sessions : 10
+1 10
+#
+# SPAN_UDP
+# [1] peer engine number : 2
+# [2] max export sessions : 10
+# [3] max import sessions : 10
+# [4] max segment size : 64000 (bytes)
+# [5] aggregation size limit : 100000 (bytes)
+# [6] aggregation time limit : 1 (secs)
+# [7] udp link service name : 10.0.1.2:1113
+# [8] transmission rate : 1000000 (bits per sec)
+# [9] queueing latency : (secs)
+a span 2 10 10 64000 100000 1 'udplso 10.44.3.2:1113 1000000'
+#
+# START_UDP
+# [1] ip address (or name) : 10.0.1.1
+# [2] local port number : 1113
+w 1
+s 'udplsi 10.44.3.1:1113'

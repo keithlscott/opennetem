@@ -1,0 +1,16 @@
+FROM ubuntu
+RUN apt -y update
+
+# Copy files from etc to the container without replacing the
+# entire /etc directory.  Files already present will be
+# overwritten.
+#COPY ./etc/. /etc
+
+RUN apt -y update
+RUN apt -y install python3
+
+COPY ./container_start.sh /netem/bin/container_start.sh
+
+CMD ["/bin/bash", "/netem/bin/container_start.sh"]
+
+

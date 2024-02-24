@@ -1,0 +1,66 @@
+#
+# Copyright (C) 2024 Keith Scott <keithlscott@gmail.com>
+# GNU Public License Version 3, 29 June 2007
+#
+
+FROM ubuntu
+
+RUN apt -y update
+RUN apt -y install gcc g++ automake libtool make perl unzip
+# RUN ln -s /usr/bin/make /usr/bin/gmake
+
+# This can be overriddent by passing --build-arg ION_VERSION=XXXXX
+# to the docker build command.
+ARG ION_VERSION=4.1.2
+ARG ION_DIR=ION-DTN-ion-open-source-${ION_VERSION}
+
+ADD https://github.com/nasa-jpl/ION-DTN/archive/refs/tags/ion-open-source-${ION_VERSION}.tar.gz /tmp/ion-open-source-${ION_VERSION}.tar.gz
+
+#
+# ION tarball is now in /tmp
+#
+WORKDIR /tmp/
+RUN ls
+RUN tar -xzf ion-open-source-${ION_VERSION}.tar.gz
+WORKDIR /tmp/${ION_DIR}
+RUN autoreconf -fi
+RUN ./configure && make && make install
+
+
+#################################################################################
+#
+# Set up the 'production' container.
+#
+FROM ubuntu
+#
+# Copy ION executables and libraries from the build container.
+#
+COPY --from=0 /usr/local/lib/ /usr/local/lib
+COPY --from=0 /usr/local/bin/ /usr/local/bin
+
+RUN apt -y update
+RUN apt -y install iproute2 iputils-ping tcpdump collectd vim psmisc jq
+RUN apt -y install python3
+RUN apt -y install python3-pip
+RUN pip install statsd-tags influxdb_client
+
+#
+# Set up so that /usr/local/lib is in LD_LIBRARY_PATH
+#
+COPY ld.so.conf_usr_local /etc/ld.so.conf.d/usr_local
+RUN ldconfig
+
+# There is literally no $USER in the docker container.
+# This confuses killm so we patch it to user 'root'.
+COPY killm /usr/local/bin/killm
+
+#
+# Copy files from etc to the container without replacing the
+# entire /etc directory.  Files already present will be
+# overwritten.
+#
+COPY ./etc/. /etc
+COPY ./container_start.sh /netem/bin/container_start.sh
+
+CMD ["/bin/bash", "/netem/bin/container_start.sh"]
+

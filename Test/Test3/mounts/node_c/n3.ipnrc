@@ -1,0 +1,7 @@
+# PLAN
+a plan 3 udp/127.0.0.1:4556
+
+# [1] to node number : 2
+# [2] default ltp outduct name : 2
+a plan 2 tcp/10.45.7.1:4556
+

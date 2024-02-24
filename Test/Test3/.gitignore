@@ -1,0 +1,14 @@
+**/bpecho.out
+**/start_ion.out
+**/start_ion2.log
+**/foo.out
+**/foo.txt
+**/*.pcap
+netem.log
+
+**/bping_3.1.out
+**/ion.log
+**/ltpblock*
+**/start_ion.out
+**/start_ion2.log
+**/bpecho.out

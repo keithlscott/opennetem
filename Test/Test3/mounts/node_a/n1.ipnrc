@@ -1,0 +1,9 @@
+# FILE: n1.ipnrc
+# [1] to node number 1 (self)
+# udp to 127.0.0.1:4556
+a plan 1 udp/127.0.0.1:4556
+
+# PLAN_LTP
+# [1] to node number : 2
+# [2] default ltp outduct name : 1
+a plan 2 ltp/2

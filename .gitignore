@@ -1,0 +1,13 @@
+opennetem_env
+netsim.log
+var
+**.DS_Store
+__pycache__
+**._*
+**/netem/globals
+netem_env
+netem.log
+
+doc/_build
+**__pycache__
+._*.__py

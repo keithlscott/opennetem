@@ -1,0 +1,71 @@
+networks:
+  network:
+    name: netem_monitor
+
+volumes:
+  monitor_prometheus-data:
+    external: true
+  monitor_grafana-data:
+    external: true
+  monitor_influxdb-data:
+    external: true
+
+services:
+  statsd_exporter:
+    image: prom/statsd-exporter
+    command: "--statsd.mapping-config=/tmp/statsd/statsd_mapping.yml"
+    ports:
+      - "9102:9102"
+      - "9125:9125/udp"
+    volumes:
+      - "/home/kscott/Projects/netsim/monitor/statsd/:/tmp/statsd"
+  
+  
+  collectd:
+    image: prom/collectd-exporter
+    ports:
+      - 25826:25826
+    command:
+      - "--collectd.listen-address=:25826"
+  
+  
+  prometheus:
+    image: prom/prometheus
+    command:
+      - "--config.file=/tmp/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--web.enable-admin-api"
+    ports:
+      - "9090:9090"
+    volumes:
+      - "/home/kscott/Projects/netsim/monitor/prometheus:/tmp/prometheus/"
+      - "monitor_prometheus-data:/prometheus"
+  
+  
+  grafana:
+    image: grafana/grafana-enterprise
+    ports:
+      - "3000:3000"
+    volumes:
+      - "monitor_grafana-data:/var/lib/grafana"
+
+
+  influxdb:
+    image: influxdb:latest
+    volumes:
+      - "/home/kscott/Projects/netsim/monitor/influxdb2:/etc/influxdb2"
+      - "monitor_influxdb-data:/var/lib/influxdb2"
+#    env_file:
+#      - .env
+#    entrypoint: ["./entrypoint.sh"]
+    ports:
+      - 8086:8086
+
+  utilities:
+    image: netem_utilities
+    ports:
+      - "9080:9080"
+
+
