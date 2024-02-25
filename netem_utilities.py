@@ -57,7 +57,8 @@ class influxdb_support(object):
 
 def apply_to_all_containers(func):
     logger.info(f"In apply_to_all_containers {func.__name__}")
-    containers = client.containers.list(all=True, filters={"name": "netem*"})
+    # containers = client.containers.list(all=True, filters={"name": "netem*"})
+    containers = client.containers.list(all=True, filters={"label": ["netem_node=True"]})
 
     with multiprocessing.Pool(processes=3) as pool:
         container_names = [x.name for x in containers]
@@ -95,15 +96,16 @@ def run_command_in_all_containers(command):
 
 
 def remove_all_networks():
-    networks = client.networks.list(names="netem*")
+    # networks = client.networks.list(names="netem*")
+    networks = client.networks.list(filters={"label": ["netem_network=True"]})
     print([x.name for x in networks])
     for n in networks:
         n.remove()
 
 
 def check_running():
-    containers = client.containers.list(all=True, filters={"name": "netem*"})
-    networks = client.networks.list(names="netem*")
+    containers = client.containers.list(all=True, filters={"label": ["netem_node=True"]})
+    networks = client.networks.list(filters={"label": ["netem_network=True"]})
 
     if len(containers)>0 or len(networks)>0:
         print(f"It seems like there are existing containers and/or networks.")

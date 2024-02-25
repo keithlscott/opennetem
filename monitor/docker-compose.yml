@@ -18,7 +18,7 @@ services:
       - "9102:9102"
       - "9125:9125/udp"
     volumes:
-      - "/home/kscott/Projects/netsim/monitor/statsd/:/tmp/statsd"
+      - "./statsd/:/tmp/statsd"
   
   
   collectd:
@@ -40,7 +40,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - "/home/kscott/Projects/netsim/monitor/prometheus:/tmp/prometheus/"
+      - "./prometheus:/tmp/prometheus/"
       - "monitor_prometheus-data:/prometheus"
   
   
@@ -55,7 +55,7 @@ services:
   influxdb:
     image: influxdb:latest
     volumes:
-      - "/home/kscott/Projects/netsim/monitor/influxdb2:/etc/influxdb2"
+      - "./influxdb2:/etc/influxdb2"
       - "monitor_influxdb-data:/var/lib/influxdb2"
 #    env_file:
 #      - .env

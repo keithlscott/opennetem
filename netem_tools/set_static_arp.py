@@ -23,7 +23,8 @@ def get_mac_addresses(node, network, verbose):
     if verbose:
         print(f"Looking for {node} in container_info")
     for search_node in info:
-        if search_node != "netem_"+node:
+        #if search_node != "netem_"+node:
+        if search_node != node:
             if verbose:
                 print(f"  Skipping {node} {search_node}")
             continue
@@ -34,7 +35,8 @@ def get_mac_addresses(node, network, verbose):
         for interface in info[search_node]:
             if interface["ifname"] in ignored_interfaces:
                 continue
-            if interface["network_name"] == "netem_"+network:
+            # if interface["network_name"] == "netem_"+network:
+            if interface["network_name"] == +network:
                 if verbose:
                     print(f"Found netem_{network} in interface")
                     print(interface)

@@ -246,7 +246,8 @@ class netem_scenario(object):
 					remove_dead_threads2()
 					time.sleep(next_time-time.time())
 				logger.info(f"Thread {self.name} launching NEW LinkProcessingThread to make link change")
-				host_interface = self.scenario.topology.iface_info[(f"netem_{next_command['source']}", f"netem_{next_command['dest']}")]
+				# host_interface = self.scenario.topology.iface_info[(f"netem_{next_command['source']}", f"netem_{next_command['dest']}")]
+				host_interface = self.scenario.topology.iface_info[(f"{next_command['source']}", f"{next_command['dest']}")]
 
 				foo = threading.Thread(target=self.scenario.change_link_params, name=f"LinkProcessingThread for {next_command['source']}-{next_command['dest']} at {next_command['time']} on list interface {host_interface}",
 						   args=(next_command, host_interface,))
@@ -345,15 +346,18 @@ class netem_scenario(object):
 			for c in self.command_list:
 				for container_name in c["nodes"]:
 					logger.info(f"Thread {self.name} checking to see if container {container_name} is one of mine {self.node_list}")
-					containers = self.client.containers.list(filters={"name": "netem_"+container_name})
+					containers = self.client.containers.list(all=True, filters={"label": ["netem_node=True"]})
+					# containers = self.client.containers.list(filters={"name": "netem_"+container_name})
 					logger.info(f"Container list is: {[c.name for c in containers]}")
 					for n in self.node_list:
 						logger.info(f"  checking {n} against container list {[c.name for c in containers]}")
 						for c1 in containers:
-							if c1.name=="netem_"+n:
+							#if c1.name=="netem_"+n:
+							if c1.name==n:
 								logger.info(f"Thread {self.name} is handling command {c} for node {n} container {c1.name}")
 								tmp = c.copy()
-								tmp["node_name"] = "netem_"+n
+								#tmp["node_name"] = "netem_"+n
+								tmp["node_name"] = n
 								tmp["container"] = c1
 								tmp["command"] = tmp["command"].replace("NETEM_NODE_NAME", n)     # Replace NETEM_NODE_NAME with the node name
 								tmp["command"] = tmp["command"].replace("NETEM_START_TIME", str(int(self.scenario.instance_info["start_time"])))     # Replace NETEM_START_TIME with the scenario start time

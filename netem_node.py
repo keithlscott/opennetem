@@ -68,10 +68,12 @@ class netem_node(object):
             self.container = self.client.containers.create(
                 self.node_config["container_image"],
                 # command="tail -f /dev/null",
-                name="netem_"+self.node_name,          # Container name gets netem_ prepended to it.
+                # name="netem_"+self.node_name,          # Container name gets netem_ prepended to it.
+                name=self.node_name,          # Container name gets netem_ prepended to it.
                 privileged=True,
                 cap_add=["NET_ADMIN"],
                 hostname=self.node_name,
+                labels={"netem_node": "True"},
                 mounts=mounts,
                 working_dir=working_dir,
                 detach=True

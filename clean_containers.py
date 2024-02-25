@@ -10,6 +10,23 @@ logger = netem_logging.get_sublogger("clean_containers")
 client = docker.from_env()
 
 #
+# Stop and remove containers by label
+#
+# Container_label list should be of the form ["netem_node=True", ...
+#]
+def stop_remove_container_bylabel(container_label_list):
+    containers = client.containers.list(all=True, filters={"label": container_label_list})
+    if len(containers)==0:
+        print(f"Can't find any containers that match filter 'label: {container_label_list}.")
+        return
+
+    for c in containers:
+        stop_remove_container_byname(c.name)
+    
+    return
+
+
+#
 # Stop and remove a container
 #
 def stop_remove_container_byname(container_name):

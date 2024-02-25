@@ -63,6 +63,7 @@ class time_variant_topology(object):
         network = self.scenario.client.networks.create(
             net_name,
             driver="bridge",
+            labels={"netem_network": "True"},
             ipam=ipam_config
         )
         return(network)
@@ -307,7 +308,8 @@ class time_variant_topology(object):
             logger.info(f"Instantiating network {n} : {self.scenario.scenario_dict['networks'][n]['network']}")
             net = self.create_network(self.scenario.scenario_dict['networks'][n]["network"],
                                       self.scenario.scenario_dict['networks'][n]["gateway"],
-                                      "netem_"+n)
+                                      n)
+                                     #  "netem_"+n)
             self.scenario.networks[n] = net
         
         # Connect containers to networks
