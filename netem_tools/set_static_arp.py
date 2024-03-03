@@ -10,11 +10,14 @@ import subprocess
 #
 # network is a netem network name (e.g. "ab")
 #
-def get_mac_addresses(node, network, verbose):
-    with open("/netem/globals/container_info.json", "r") as fp:
-        data = fp.read()
-        info = json.loads(data)
-
+def get_mac_addresses(node, network, verbose, container_info=None):
+    if container_info==None:
+        with open("/netem/globals/container_info.json", "r") as fp:
+            data = fp.read()
+            info = json.loads(data)
+    else:
+        info = container_info
+        
     if verbose:
         print(json.dumps(info, indent=2))
 

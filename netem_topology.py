@@ -11,6 +11,7 @@
 #
 # 
 import sys
+import math
 import docker
 
 import json
@@ -19,6 +20,7 @@ import pandas
 import numpy
 import argparse
 import subprocess
+import ipaddress
 
 import netem_scenario
 
@@ -53,6 +55,7 @@ class time_variant_topology(object):
     # Subnet of the form '192.168.44.0/24'
     # Gateway of the form '192.168.44.254'
     def create_network(self, subnet, gateway, net_name):
+        logger.info(f"Instantiating network {net_name} with as {subnet} with gateway {gateway}")
         ipam_pool = docker.types.IPAMPool(
             subnet=subnet,
             gateway=gateway
@@ -299,20 +302,65 @@ class time_variant_topology(object):
     # appropriately manipulated (delayed, lost)
     #
     def instantiate_networks(self):
+
+        #
+        # Set up defaults for unspecified networks.
+        #
+        default_num_hosts = 2
+        current_ipv4_network = "10.128.0.0"
+        if "default" in self.scenario.scenario_dict["networks"]:
+            if "IPv4" in self.scenario.scenario_dict["networks"]["default"]:
+                if "network" in self.scenario.scenario_dict["networks"]["default"]["IPv4"]:
+                    current_ipv4_network = self.scenario.scenario_dict["networks"]["default"]["IPv4"]["network"]
+                if "num_hosts" in self.scenario.scenario_dict["networks"]["default"]["IPv4"]:
+                    default_num_hosts = self.scenario.scenario_dict["networks"]["default"]["IPv4"]["num_hosts"]
+
         logger.info(f"List of networks is: {self.scenario.scenario_dict['networks']}")
         for n in self.scenario.scenario_dict["networks"]:
+            if n=="defaults":
+                continue
+
             if n in self.scenario.networks:
                 logger.info(f"Already have a network named {n}; not making another")
                 continue
 
-            logger.info(f"Instantiating network {n} : {self.scenario.scenario_dict['networks'][n]['network']}")
-            net = self.create_network(self.scenario.scenario_dict['networks'][n]["network"],
-                                      self.scenario.scenario_dict['networks'][n]["gateway"],
-                                      n)
-                                     #  "netem_"+n)
+            logger.info(f"Instantiating network {n} : {self.scenario.scenario_dict['networks'][n]}")
+
+            #
+            #
+            #
+            if "network" not in self.scenario.scenario_dict['networks'][n]:
+                #
+                # Need to make up a network
+                # +3 to account for network, broadcast, and gateway
+                if "num_hosts" in self.scenario.scenario_dict['networks'][n]:
+                    num_hosts = 3+self.scenario.scenario_dict['networks'][n]["num_hosts"]
+                else:
+                    num_hosts = 3+default_num_hosts
+
+                if self.scenario.scenario_dict['networks'][n]["IPVersion"]==4:
+                    tmp = ipaddress.IPv4Network(current_ipv4_network)
+                    prefixlen = int(32-math.log(num_hosts, 2))
+
+                    tmp_net = tmp.supernet(new_prefix=prefixlen)
+                    the_network = f"{tmp_net}"
+                    the_gateway = f"{tmp_net.broadcast_address-1}"
+
+                    current_ipv4_network = tmp_net.broadcast_address+1
+                else:
+                    logger.fatal("Can only automatically generate IPv4 networks right now.")
+                    sys.exit(-1)
+            else:
+                # Network is fully specified in the scenario file
+                the_network = self.scenario.scenario_dict['networks'][n]["network"]
+                the_gateway = self.scenario.scenario_dict['networks'][n]["gateway"]
+
+            net = self.create_network(the_network, the_gateway, n)
             self.scenario.networks[n] = net
         
+        #
         # Connect containers to networks
+        #
         for n in self.scenario.scenario_dict["node_configs"]:
             if n=="DEFAULT" or n=="__global":
                 continue
@@ -320,7 +368,10 @@ class time_variant_topology(object):
             container = self.scenario.nodes[n].container
             for intf in self.scenario.scenario_dict["node_configs"][n]["ipv4_addresses"]:
                 net_name = intf[0]
-                address = intf[1]
+                if len(intf)>1:
+                    address = intf[1]
+                else:
+                    address = None
                 logger.info(f"Connecting container {n} to network {net_name} at address {address}")
                 self.scenario.networks[net_name].connect(container, address)
 

@@ -15,12 +15,11 @@ logger = netem_logging.get_sublogger("node")
 class netem_node(object):
     # node_config is the node's entry from the node_configs
     # portion of the scenario config file
-    def __init__(self, scenario, node_name, node_config, global_config):
+    def __init__(self, scenario, node_name, node_config):
         self.scenario = scenario
         self.client = docker.from_env()
         self.node_name = node_name
         self.node_config = node_config.copy()
-        self.global_config = global_config
         self.container = None
         logger.info(f"Creating node from {node_config}")
         self.create_container()
@@ -35,6 +34,7 @@ class netem_node(object):
 
     def create_container(self):
         my_host_dir = f"{self.scenario.scenario_dir}/netem/{self.node_name}"
+        logger.info("Creating container {self.node_name} with:\n{self.node_config}")
 
         try:
             os.makedirs(my_host_dir, mode = 0o777, exist_ok=True)
@@ -45,13 +45,17 @@ class netem_node(object):
             # This adds mount points from both the node_config and global_config
             # sections of the 'node_configs' section of the scenario file.
             working_dir = "/"
-            for config_source in [self.node_config, self.global_config]:
+            for config_source in [self.node_config]:
                 # Add in any node-specific mounts from the scenario file
+                if "mounts" not in config_source or len(config_source["mounts"])==0:
+                    logger.info(f"NO node-specific mounts for {self.node_name}.")
+
                 if "mounts" in config_source:
                     for m in config_source["mounts"]:
                         src_dir = self.scenario.scenario_dir+"/"+m[0]
                         if not os.path.exists(src_dir):
                             os.makedirs(src_dir, exist_ok=True)
+                        logger.info(f"Adding node-specific mount point {src_dir} at {m[1]}")
                         mounts += [docker.types.Mount(m[1], src_dir, type="bind")]
                 if "working_dir" in config_source:
                     working_dir = config_source["working_dir"]

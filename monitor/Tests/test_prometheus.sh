@@ -15,7 +15,7 @@ docker run \
     --hostname prometheus \
     --network monitor \
     -p 9090:9090 \
-    -v /home/kscott/Projects/netsim/monitor/prometheus:/etc/prometheus/ \
+    -v /home/kscott/Projects/netem/monitor/prometheus:/etc/prometheus/ \
     -v prometheus-data:/prometheus \
     prom/prometheus \
     --config.file=/etc/prometheus/prometheus.yml \

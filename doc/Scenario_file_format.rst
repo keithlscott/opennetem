@@ -51,7 +51,7 @@ A dictionary of nodes keyed by node name with information about the node. ::
       "container_image": "netem1",
       "ipv4_addresses": [["ab", "10.44.3.1"], ["ac", "10.46.7.1"]]
       "mounts": [["mounts/node_a", "/netem/mounts/node_a"]],
-      "working_dir": "/netsim/mounts/node_a"
+      "working_dir": "/netem/mounts/node_a"
     },
 
 The ``ipv4_addresses`` list allows fine-grained control over the addresses of the node's

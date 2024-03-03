@@ -13,6 +13,7 @@ import threading
 import concurrent
 import subprocess
 import math
+import re
 
 import json
 import datetime
@@ -86,6 +87,25 @@ class netem_scenario(object):
 
 	def load_scenario(self, scenario_filename):
 		self.scenario_dict = netem_read_json_file(scenario_filename)
+		# Merge global node configs into each of the nodes' configs
+		global_config = self.scenario_dict["node_configs"]["__global"] if "__global" in self.scenario_dict["node_configs"] else {}
+
+		# Merge in global_config info with current node config
+		for node in self.scenario_dict["node_configs"]:
+			if node=="__global":
+				continue
+			for key in global_config:
+				if key not in self.scenario_dict["node_configs"][node]:
+					self.scenario_dict["node_configs"][node][key] = global_config[key]
+			
+			if "mounts" in global_config and ("mounts" not in self.scenario_dict["node_configs"][node]):
+				self.scenario_dict["node_configs"][node]["mounts"] = []
+			for mount in global_config["mounts"]:
+				logger.info(f"Adding global mount {mount} to {node}'s mount list")
+				self.scenario_dict["node_configs"][node]["mounts"] += [mount]
+
+			logger.info(f"After updating with global_cofig {node}'s config is now:\n{self.scenario_dict['node_configs'][node]}")
+
 		self.topology = netem_topology.time_variant_topology(self)
 		if self.scenario_dict["topology_filename"] != None:
 			self.topology.read_topofile()
@@ -93,9 +113,7 @@ class netem_scenario(object):
 		self.scenario_dir = os.path.dirname(os.path.realpath(scenario_filename))
 		logger.info(f"Scenario file path: {self.scenario_dir}")
 
-		# if os.path.exists(f"{self.scenario_dir}/logging.conf"):
-		# 	logging.config.fileConfig(f'{self.scenario_dir}/logging.conf')
-		# 	logging.info(f"Reloading logging.config from scenario dir file {self.scenario_dir}/logging.conf")
+
 
 
 	def list_networks(self):
@@ -108,21 +126,19 @@ class netem_scenario(object):
 		return(networks)
 	
 
-	def instantiate_one_node(self, node_name, node_info, global_info):
-		node = netem_node.netem_node(self, node_name, node_info, global_info)
+	def instantiate_one_node(self, node_name, node_info):
+		node = netem_node.netem_node(self, node_name, node_info)
 		self.nodes[node_name] = node
 		return
 	
 	def instantiate_nodes(self):
+		# Note that global node_configs should have already been merged into the individual
+		# nodes' configs
 		for node_name in self.scenario_dict["node_configs"]:
-			global_config = None
-			if "__global" in self.scenario_dict["node_configs"]:
-				global_config = self.scenario_dict["node_configs"]["__global"]
-
 			if node_name=="DEFAULT" or node_name=="__global":
 				continue
-			logger.info(f"instantiate_nodes making a node from {self.scenario_dict['node_configs'][node_name]}")
-			self.instantiate_one_node(node_name, self.scenario_dict["node_configs"][node_name], global_config)
+			logger.info(f"instantiate_nodes making a node from {self.scenario_dict['node_configs']}")
+			self.instantiate_one_node(node_name, self.scenario_dict["node_configs"][node_name])
 
 		# Start the containers
 		logger.info("Starting containers.")
@@ -356,7 +372,35 @@ class netem_scenario(object):
 							if c1.name==n:
 								logger.info(f"Thread {self.name} is handling command {c} for node {n} container {c1.name}")
 								tmp = c.copy()
-								#tmp["node_name"] = "netem_"+n
+
+								# Do NETEM_ADDR replacement========================
+								# Define the regular expression pattern to extract A and B parameters
+								#
+								pattern = r'NETEM_ADDR\(([^,]+),\s*([^)]+)\)'
+
+								# Use re.findall to find all matches of the pattern in the input string
+								matches = re.findall(pattern, tmp["command"])
+
+								# If matches are found, extract A and B parameters
+								for m in matches:
+									# Extract A and B parameters from the first match
+									node = m[0]
+									network = m[1]
+
+									# Define the replacement string
+									replacement_string = netem_utilities.get_ip_addr(self.scenario, node, network)
+									
+									# Define the regular expression pattern to match FUNC(A, B)
+									pattern = r'NETEM_ADDR\([^)]+\)'
+
+									# Use re.sub to substitute the pattern with the replacement string
+									tmp["command"] = re.sub(pattern, replacement_string, tmp["command"])
+									logger.info(f"cmd replacement NETEM_ADDR; cmd is now {tmp['command']}")
+								# Done with NETEM_ADDR f-strings========================
+
+								#tmp["command"] = eval(f"""f'{tmp["command"]}'""")
+								logger.info(f"after fstring replacement; cmd is now {tmp['command']}")
+
 								tmp["node_name"] = n
 								tmp["container"] = c1
 								tmp["command"] = tmp["command"].replace("NETEM_NODE_NAME", n)     # Replace NETEM_NODE_NAME with the node name

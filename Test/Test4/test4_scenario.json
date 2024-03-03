@@ -1,8 +1,8 @@
 {   "Scenario": "test3",
 	"Metadata": {},
-        "start_delta": 15,
-	"topology_filename": "./test3b_topo.xlsx",
-    	"topology_sheetname": "Sheet1",
+    "start_delta": 15,
+	"topology_filename": "./test3_topo.xlsx",
+    "topology_sheetname": "Sheet1",
     	"networks": {
         "ab": {
             "network": "10.44.3.0/24",
@@ -21,19 +21,24 @@
             "container_image": "netem_ion",
             "ipv4_addresses": [["ab", "10.44.3.1"]],
             "mounts": [["mounts/node_a", "/netem/mounts/node_a"]],
-            "working_dir": "/netem/moounts/node_a"
+            "working_dir": "/netem/mounts/node_a",
+            "ion_config": {"node_number": 1,
+                           "config_dir": "mounts/node_a"}
         },
         "node_b": {
             "container_image": "netem_ion",
             "ipv4_addresses": [["ab", "10.44.3.2"], ["bc", "10.45.7.1"]],
             "mounts": [["mounts/node_b", "/netem/mounts/node_b"]],
-            "working_dir": "/netem/mounts/node_b"
+            "working_dir": "/netem/mounts/node_b",
+            "ion_config": {"node_number": 2,
+                           "config_dir": "mounts/node_b"}
         },
         "node_c": {
             "container_image": "netem_ion",
             "ipv4_addresses": [["bc", "10.45.7.2"]],
             "mounts": [["mounts/node_c", "/netem/mounts/node_c"]],
-            "working_dir": "/netem/mounts/node_c"
+            "working_dir": "/netem/mounts/node_c",
+            "ion_config": {"config_dir": "mounts/node_c"}
         }
     },
     
@@ -42,9 +47,10 @@
         {"time": -2, "nodes": ["node_a"], "command": "nohup bpecho ipn:1.1 >& /netem/mounts/node_a/bpecho.out &"},
         {"time": -2, "nodes": ["node_b"], "command": "nohup bpecho ipn:2.1 >& /netem/mounts/node_b/bpecho.out &"},
         {"time": -2, "nodes": ["node_c"], "command": "nohup bpecho ipn:3.1 >& /netem/mounts/node_c/bpecho.out &"},
+        {"time": -2, "nodes": ["*"],      "command": "cd /netem/mounts/NETEM_NODE_NAME && ionadmin self_contacts.ionrc"},
         {"time":  0, "nodes": ["*"],      "command": "cd /netem/mounts/global && ionadmin contacts.ionrc && sleep 1"},
         {"time":  3, "nodes": ["node_a"], "command": "tcpdump -nn -l -i eth2 port 1113 -w node_a_ltp.pcap"},
         {"time":  3, "nodes": ["node_b"], "command": "tcpdump -nn -l -i eth2 port 1113 -w node_b_ltp.pcap"},
-        {"time":  5, "nodes": ["node_a"], "command": "nohup /netem/netem_tools/yip.sh ipn:1.3 ipn:3.1 NETEM_START_TIME >& /netem/mounts/node_a/bping_3.1.out &"}
+        {"time":  5, "nodes": ["node_a"], "command": "nohup /netem/netem_tools/bping_monitor.sh ipn:1.3 ipn:3.1 NETEM_START_TIME >& /netem/mounts/node_a/bping_3.1.out &"}
     ]
 }

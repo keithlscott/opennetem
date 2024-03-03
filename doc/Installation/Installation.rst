@@ -23,19 +23,23 @@ Next, install a few prerequisite packages which let apt use packages over HTTPS:
 
 Then add the GPG key for the official Docker repository to your system:
 
-curl -fsSLhttps://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+``sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc``
 
-Add the Docker repository to APT sources:
+Add the Docker repository to APT sources::
 
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg]https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
 
 Update your existing list of packages again for the addition to be recognized:
 
-sudo apt update
+``sudo apt update``
 
 Make sure you are about to install from the Docker repo instead of the default Ubuntu repo:
 
-apt-cache policy docker-ce
+``apt-cache policy docker-ce``
 
 You’ll see output like this, although the version number for Docker may be different:
 
@@ -53,7 +57,7 @@ Notice that docker-ce is not installed, but the candidate for installation is fr
 
 Finally, install Docker:
 
-sudo apt install docker-ce
+`` sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin``
 
 Clone netem repo
 ================

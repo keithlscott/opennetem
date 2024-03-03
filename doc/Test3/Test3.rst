@@ -40,7 +40,7 @@ One of the commands in the test3_scenario.json script is:
 
 The ``--verbose`` flag and shell output redirection create a file with the following::
 
-  kscott@nucbuntu:~/Projects/netsim/Test/Test3$ cat mounts/node_a/bping_3.1.out
+  kscott@nucbuntu:~/Projects/netem/Test/Test3$ cat mounts/node_a/bping_3.1.out
   Fri Feb 16 14:43:56 UTC 2024 ====  8: 64 bytes from ipn:3.1  seq=0 time=2.886650 s
   Fri Feb 16 14:43:57 UTC 2024 ====  9: 64 bytes from ipn:3.1  seq=1 time=2.898079 s
   Fri Feb 16 14:43:57 UTC 2024 ====  9: 64 bytes from ipn:3.1  seq=2 time=1.895505 s

@@ -1,7 +1,5 @@
-mounts/node_a/a_to_b_ping.txt
-**/ls_1.txt
-**/ls_2.txt
-**/t_15
-mounts/node_a/ping_monitor.*
+mounts/node_a
+mounts/node_b
+mounts/node_c
 netem.log
 

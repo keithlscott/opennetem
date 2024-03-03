@@ -47,19 +47,19 @@ The Test1 scenario file is::
                 "container_image": "netem1",
                 "ipv4_addresses": [["ab", "10.44.3.1"], ["ac", "10.46.7.1"]],
                 "mounts": [["mounts/node_a", "/netem/mounts/node_a"]],
-                "working_dir": "/netsim/mounts/node_a"
+                "working_dir": "/netem/mounts/node_a"
             },
             "node_b": {
                 "container_image": "netem1",
                 "ipv4_addresses": [["ab", "10.44.3.2"], ["bc", "10.45.7.1"]],
                 "mounts": [["mounts/node_b", "/netem/mounts/node_b"]],
-                "working_dir": "/netsim/mounts/node_b"
+                "working_dir": "/netem/mounts/node_b"
             },
             "node_c": {
                 "container_image": "netem1",
                 "ipv4_addresses": [["bc", "10.45.7.2"], ["ac", "10.46.7.2"]],
                 "mounts": [["mounts/node_b", "/netem/mounts/node_b"]],
-                "working_dir": "/netsim/mounts/node_c"
+                "working_dir": "/netem/mounts/node_c"
             }
         },
         "commands": [

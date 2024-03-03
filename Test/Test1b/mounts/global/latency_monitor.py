@@ -15,9 +15,9 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 class influxdb_writer(object):
     def __init__(self):
         # token = os.environ.get("INFLUXDB_TOKEN")
-        self.token = "uh0PBnHMtrECKmP7HjxYzQL5YM_yRZfqHaIYXafT0a4w2on70Tc6ezCt0Q0hevlY_k2mHdldLDfnqMiB_a4s9A=="
+        self.token = "9Q3OsSe5OFZBb0EWUVzcmERy80ZPI8yHORRs14dXGQmoZ0ySOGcShf3vlbZWlAebN3X_2vvO3wy_lQmWL7M71A=="
         self.org = "netem"
-        self.url = "http://influxdb2:8086"
+        self.url = "http://monitor-influxdb-1:8086"
 
         self.client = influxdb_client.InfluxDBClient(url=self.url, token=self.token, org=self.org)
 

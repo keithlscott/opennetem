@@ -15,6 +15,7 @@ import time
 import logging
 import netem_logging
 import clean_containers
+import socket
 
 import influxdb_client, os, time
 from influxdb_client import InfluxDBClient, Point, WritePrecision
@@ -190,3 +191,59 @@ def get_reltime(host="monitor-netem_utilities-1", port=8088, new_start=None):
 #
     ## Send an empty UDP datagram to the specified destination
     #send_and_receive_tcp_packet(destination_host, destination_port, args.set)
+
+
+# # Get the interface info of the given node's # interfaces to the given network.
+#
+# network is a netem network name (e.g. "ab")
+# Returns tuple of the form: [('eth2', ['10.128.0.1'], '02:42:0a:80:00:01')]
+#
+def get_interface_info(scenario, node, network, verbose=False):
+
+    if scenario==None:
+        with open("/netem/globals/container_info.json", "r") as fp:
+            data = fp.read()
+            info = json.loads(data)
+    else:
+        info = scenario.container_info
+
+    if verbose:
+        print(json.dumps(info, indent=2))
+
+    answers = []
+    ignored_interfaces = ["lo", "dock", "mon"]
+    if verbose:
+        print(f"Looking for {node} in container_info")
+    for search_node in info:
+        #if search_node != "netem_"+node:
+        if search_node != node:
+            if verbose:
+                print(f"  Skipping {node} {search_node}")
+            continue
+
+        if verbose:
+            print(f"Found {search_node} in container_info")
+            print(f"Looking for network netem_{network}")
+        for interface in info[search_node]:
+            if interface["ifname"] in ignored_interfaces:
+                continue
+            # if interface["network_name"] == "netem_"+network:
+            if interface["network_name"] == network:
+                if verbose:
+                    print(f"Found netem_{network} in interface")
+                    print(interface)
+                addrs = []
+                for ipaddr in interface["addr_info"]:
+                    addrs += [ipaddr["local"]]
+                answers += [(interface["ifname"], addrs, interface["address"])]
+
+    return(answers)
+
+def get_ip_addr(scenario, node, network, verbose=False):
+    ret = get_interface_info(scenario, node, network, verbose)
+    logger.info(f"get_interface_info({node}, {network}) is: {ret}")
+    if len(ret[0][1])>=1:
+        return ret[0][1][0]
+    
+
+    

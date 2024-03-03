@@ -22,9 +22,9 @@
 ,       node_b,     node_c,     1400ms,     200kbit
 ,       ,           node_a,     2s,         150kbit
 ,       node_c,     node_a,     1s,         100kbits
-180,    node_a,     node_b,     0.5s,       100kbit
+120,    node_a,     node_b,     0.5s,       100kbit
 ,       node_b,     node_a,     0.5s,       150kbit
-210,    node_a,     node_b,     ,
+150,    node_a,     node_b,     ,
 ,       node_b,     node_a,     ,
 ,       node_b,     node_c,     ,
 ,       node_c,     node_b,     ,
