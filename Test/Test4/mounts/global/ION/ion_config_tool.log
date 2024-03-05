@@ -1,0 +1,82 @@
+2024-03-05 06:22:55,885 [INFO ]  Starting
+2024-03-05 06:22:55,886 [INFO ]  args are Namespace(config_dir='test3_globals', write_configs=[['node_a'], ['node_b'], ['node_c']], base_dir='mounts')
+2024-03-05 06:22:55,886 [INFO ]  this_node is {'mounts': [['mounts/global', '/netem/mounts/global']]}
+2024-03-05 06:22:55,886 [INFO ]  this_node is {'container_image': 'netem_ion', 'ipv4_addresses': [['ab', '10.44.3.1']], 'mounts': [['mounts/global', '/netem/mounts/global']], 'working_dir': '/netem/mounts/node_a', 'ion_config': {'node_number': 1, 'config_dir': 'mounts/node_a/ION_configs'}}
+2024-03-05 06:22:55,887 [INFO ]  ion_config for node node_a is {'node_number': 1, 'config_dir': 'mounts/node_a/ION_configs'}
+2024-03-05 06:22:55,887 [INFO ]  =================START==============
+2024-03-05 06:22:55,887 [INFO ]  dir for ION configs for node_a is ION_node_a
+2024-03-05 06:22:55,887 [INFO ]  Making ion_node instance for node_a
+2024-03-05 06:22:55,887 [INFO ]  this_node is {'container_image': 'netem_ion', 'ipv4_addresses': [['ab', '10.44.3.2'], ['bc', '10.45.7.1']], 'mounts': [['mounts/global', '/netem/mounts/global']], 'working_dir': '/netem/mounts/node_b', 'ion_config': {'node_number': 2, 'config_dir': 'mounts/node_b/ION_configs', 'outducts': [['node_a', 'ltp'], ['node_c', 'tcp']]}}
+2024-03-05 06:22:55,887 [INFO ]  ion_config for node node_b is {'node_number': 2, 'config_dir': 'mounts/node_b/ION_configs', 'outducts': [['node_a', 'ltp'], ['node_c', 'tcp']]}
+2024-03-05 06:22:55,887 [INFO ]  =================START==============
+2024-03-05 06:22:55,887 [INFO ]  dir for ION configs for node_b is ION_node_b
+2024-03-05 06:22:55,887 [INFO ]  Making ion_node instance for node_b
+2024-03-05 06:22:55,887 [INFO ]  this_node is {'container_image': 'netem_ion', 'ipv4_addresses': [['bc', '10.45.7.2']], 'mounts': [['mounts/global', '/netem/mounts/global']], 'working_dir': '/netem/mounts/node_c', 'ion_config': {'config_dir': 'mounts/node_c/ION_configs'}}
+2024-03-05 06:22:55,887 [INFO ]  ion_config for node node_c is {'config_dir': 'mounts/node_c/ION_configs'}
+2024-03-05 06:22:55,887 [INFO ]  =================START==============
+2024-03-05 06:22:55,887 [INFO ]  dir for ION configs for node_c is ION_node_c
+2024-03-05 06:22:55,887 [INFO ]  Making ion_node instance for node_c
+2024-03-05 06:22:55,887 [INFO ]  Done making initial ION instances (3).
+2024-03-05 06:22:55,887 [INFO ]  Adding UDP loopback for node_a
+2024-03-05 06:22:55,887 [INFO ]  Considering container_node node_b as potential neighbor
+2024-03-05 06:22:55,887 [INFO ]  container node_b interface eth2 on network ab
+2024-03-05 06:22:55,887 [INFO ]  node node_a shares a network with node node_b :: ab
+2024-03-05 06:22:55,887 [INFO ]  ^^^^^^ neighbor_nodes[node_a] is now: [['node_b', 'ab', '10.44.3.2']]
+2024-03-05 06:22:55,887 [INFO ]  container node_b interface eth3 on network bc
+2024-03-05 06:22:55,887 [INFO ]  Considering container_node node_c as potential neighbor
+2024-03-05 06:22:55,887 [INFO ]  container node_c interface eth2 on network bc
+2024-03-05 06:22:55,887 [INFO ]  Considering container_node node_a as potential neighbor
+2024-03-05 06:22:55,887 [INFO ]  container node_a interface eth2 on network ab
+2024-03-05 06:22:55,887 [INFO ]  node node_b shares a network with node node_a :: ab
+2024-03-05 06:22:55,887 [INFO ]  ^^^^^^ neighbor_nodes[node_b] is now: [['node_a', 'ab', '10.44.3.1']]
+2024-03-05 06:22:55,887 [INFO ]  Adding UDP loopback for node_b
+2024-03-05 06:22:55,887 [INFO ]  Considering container_node node_c as potential neighbor
+2024-03-05 06:22:55,887 [INFO ]  container node_c interface eth2 on network bc
+2024-03-05 06:22:55,887 [INFO ]  node node_b shares a network with node node_c :: bc
+2024-03-05 06:22:55,887 [INFO ]  ^^^^^^ neighbor_nodes[node_b] is now: [['node_a', 'ab', '10.44.3.1'], ['node_c', 'bc', '10.45.7.2']]
+2024-03-05 06:22:55,887 [INFO ]  Considering container_node node_a as potential neighbor
+2024-03-05 06:22:55,887 [INFO ]  container node_a interface eth2 on network ab
+2024-03-05 06:22:55,887 [INFO ]  Considering container_node node_b as potential neighbor
+2024-03-05 06:22:55,887 [INFO ]  container node_b interface eth2 on network ab
+2024-03-05 06:22:55,887 [INFO ]  container node_b interface eth3 on network bc
+2024-03-05 06:22:55,887 [INFO ]  node node_c shares a network with node node_b :: bc
+2024-03-05 06:22:55,887 [INFO ]  ^^^^^^ neighbor_nodes[node_c] is now: [['node_b', 'bc', '10.45.7.1']]
+2024-03-05 06:22:55,887 [INFO ]  Adding UDP loopback for node_c
+2024-03-05 06:22:55,887 [INFO ]  ######################
+2024-03-05 06:22:55,887 [INFO ]  #### node node_a has no explicit outducts, adding UDP outducts to neighbors on networks: [['node_b', 'ab', '10.44.3.2']]
+2024-03-05 06:22:55,887 [INFO ]  Adding UDP outduct to node node_a's config to addr: 10.44.3.2
+2024-03-05 06:22:55,887 [INFO ]  #### node node_b has explicit outducts: [['node_a', 'ltp'], ['node_c', 'tcp']]
+2024-03-05 06:22:55,887 [INFO ]  Adding ltp outduct from node_b to node_a
+2024-03-05 06:22:55,887 [INFO ]  Adding ltp induct to node_a
+2024-03-05 06:22:55,887 [INFO ]  Adding tcp outduct from node_b to node_c
+2024-03-05 06:22:55,887 [INFO ]  Adding tcp induct to node_c
+2024-03-05 06:22:55,887 [INFO ]  #### node node_c has no explicit outducts, adding UDP outducts to neighbors on networks: [['node_b', 'bc', '10.45.7.1']]
+2024-03-05 06:22:55,887 [INFO ]  Adding UDP outduct to node node_c's config to addr: 10.45.7.1
+2024-03-05 06:22:55,887 [INFO ]  Now writing config files for: ['node_a', 'node_b', 'node_c']
+2024-03-05 06:22:55,887 [INFO ]  writing ion configs for node_a
+2024-03-05 06:22:55,887 [INFO ]  Writing configs to mounts/node_a/ION_configs
+2024-03-05 06:22:55,888 [INFO ]  in write_bprc protocols is: ['udp', 'ltp']
+2024-03-05 06:22:55,888 [INFO ]  in write_bprc inducts is:   [induct(ltp)]
+2024-03-05 06:22:55,888 [INFO ]  in write_bprc outducts is:  [outduct(udp 1 127.0.0.1:4556 node_a), outduct(udp 2 10.44.3.2 node_b)]
+2024-03-05 06:22:55,888 [INFO ]  writing ipnrc for node_a; outducts are: [outduct(udp 1 127.0.0.1:4556 node_a), outduct(udp 2 10.44.3.2 node_b)]
+2024-03-05 06:22:55,888 [INFO ]  Starting write_ltprc for node_a
+2024-03-05 06:22:55,888 [INFO ]  writing ltprc file for node_a
+2024-03-05 06:22:55,889 [INFO ]  Outbound contacts from (node_a, 1) to peers: [('node_a', 1), ('node_b', 2)]
+2024-03-05 06:22:55,889 [INFO ]  writing ion configs for node_b
+2024-03-05 06:22:55,889 [INFO ]  Writing configs to mounts/node_b/ION_configs
+2024-03-05 06:22:55,889 [INFO ]  in write_bprc protocols is: ['udp', 'ltp', 'tcp']
+2024-03-05 06:22:55,889 [INFO ]  in write_bprc inducts is:   []
+2024-03-05 06:22:55,889 [INFO ]  in write_bprc outducts is:  [outduct(udp 2 127.0.0.1:4556 node_b), outduct(ltp 1 10.44.3.1 node_a), outduct(tcp 400000 10.45.7.2 node_c)]
+2024-03-05 06:22:55,889 [INFO ]  writing ipnrc for node_b; outducts are: [outduct(udp 2 127.0.0.1:4556 node_b), outduct(ltp 1 10.44.3.1 node_a), outduct(tcp 400000 10.45.7.2 node_c)]
+2024-03-05 06:22:55,889 [INFO ]  Starting write_ltprc for node_b
+2024-03-05 06:22:55,889 [INFO ]  writing ltprc file for node_b
+2024-03-05 06:22:55,890 [INFO ]  Outbound contacts from (node_b, 2) to peers: [('node_b', 2), ('node_a', 1), ('node_c', 400000)]
+2024-03-05 06:22:55,890 [INFO ]  writing ion configs for node_c
+2024-03-05 06:22:55,890 [INFO ]  Writing configs to mounts/node_c/ION_configs
+2024-03-05 06:22:55,890 [INFO ]  in write_bprc protocols is: ['udp', 'tcp']
+2024-03-05 06:22:55,890 [INFO ]  in write_bprc inducts is:   [induct(tcp)]
+2024-03-05 06:22:55,890 [INFO ]  in write_bprc outducts is:  [outduct(udp 400000 127.0.0.1:4556 node_c), outduct(udp 2 10.45.7.1 node_b)]
+2024-03-05 06:22:55,890 [INFO ]  writing ipnrc for node_c; outducts are: [outduct(udp 400000 127.0.0.1:4556 node_c), outduct(udp 2 10.45.7.1 node_b)]
+2024-03-05 06:22:55,890 [INFO ]  Starting write_ltprc for node_c
+2024-03-05 06:22:55,890 [INFO ]  No ltp for node node_c
+2024-03-05 06:22:55,891 [INFO ]  Outbound contacts from (node_c, 400000) to peers: [('node_c', 400000), ('node_b', 2)]

@@ -114,8 +114,6 @@ class netem_scenario(object):
 		logger.info(f"Scenario file path: {self.scenario_dir}")
 
 
-
-
 	def list_networks(self):
 		networks = []
 		for node in self.scenario_dict["node_configs"]:
@@ -498,6 +496,14 @@ class netem_scenario(object):
 										           'command_list':self.scenario_dict["commands"]})
 			t.start()
 			self.command_threads += [t]
+
+		# A special thread for executing commands on the host (not in containers)
+		t = self.cmd_processing_thread( name=f"cmd_processing_thread for HOST",
+										kwargs={'scenario':self,
+												'node_list':["HOST"],
+												'command_list':self.scenario_dict["commands"]})
+		t.start()
+		self.command_threads += [t]
 
 		#
 		# Start the link characteristic processing threads.  Need to ensure that the various

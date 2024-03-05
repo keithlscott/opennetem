@@ -1,7 +1,7 @@
 {   "Scenario": "test3",
 	"Metadata": {},
     "start_delta": 15,
-	"topology_filename": "./test3_topo.xlsx",
+	"topology_filename": "./test4_topo.csv",
     "topology_sheetname": "Sheet1",
     	"networks": {
         "ab": {
@@ -43,14 +43,7 @@
     },
     
     "commands": [
-        {"time":-10, "nodes": ["*"],      "command": "cd /netem/mounts/NETEM_NODE_NAME ; source ion.env ; ../global/start_ion.sh >& /netem/mounts/NETEM_NODE_NAME/start_ion.out ; sleep 1"},
-        {"time": -2, "nodes": ["node_a"], "command": "nohup bpecho ipn:1.1 >& /netem/mounts/node_a/bpecho.out &"},
-        {"time": -2, "nodes": ["node_b"], "command": "nohup bpecho ipn:2.1 >& /netem/mounts/node_b/bpecho.out &"},
-        {"time": -2, "nodes": ["node_c"], "command": "nohup bpecho ipn:3.1 >& /netem/mounts/node_c/bpecho.out &"},
-        {"time": -2, "nodes": ["*"],      "command": "cd /netem/mounts/NETEM_NODE_NAME && ionadmin self_contacts.ionrc"},
-        {"time":  0, "nodes": ["*"],      "command": "cd /netem/mounts/global && ionadmin contacts.ionrc && sleep 1"},
-        {"time":  3, "nodes": ["node_a"], "command": "tcpdump -nn -l -i eth2 port 1113 -w node_a_ltp.pcap"},
-        {"time":  3, "nodes": ["node_b"], "command": "tcpdump -nn -l -i eth2 port 1113 -w node_b_ltp.pcap"},
-        {"time":  5, "nodes": ["node_a"], "command": "nohup /netem/netem_tools/bping_monitor.sh ipn:1.3 ipn:3.1 NETEM_START_TIME >& /netem/mounts/node_a/bping_3.1.out &"}
+        {"time":-10, "nodes": ["HOST"],   "command": "cd /netem/mounts/global ; ./main.py -w node_a -w node_b -w node_c"},
+        {"time":-5,  "nodes": ["*"],      "command": "cd /netem/mounts/NETEM_NODE_NAME ; source ion.env ; ../global/start_ion.sh >& /netem/mounts/NETEM_NODE_NAME/start_ion.out ; sleep 1"}
     ]
 }
