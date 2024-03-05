@@ -1,5 +1,0 @@
-# 'loopback' contact
-# contact +<rel_start> +<rel_length> <src> <dst> <rate_bps>
-a contact +0 +1000000 400000 400000 1000000
-# range +<rel_start> +<rel_length> <src> <dst> <owlt_s>
-a range +0 +1000000 400000 400000 1

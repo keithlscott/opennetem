@@ -1,6 +1,6 @@
 {   "Scenario": "test3",
 	"Metadata": {},
-    "start_delta": 15,
+    "start_delta": 20,
 	"topology_filename": "./test4_topo.csv",
     "topology_sheetname": "Sheet1",
     	"networks": {
@@ -23,7 +23,7 @@
             "mounts": [["mounts/node_a", "/netem/mounts/node_a"]],
             "working_dir": "/netem/mounts/node_a",
             "ion_config": {"node_number": 1,
-                           "config_dir": "mounts/node_a"}
+                           "config_dir": "/netem/mounts/node_a/ION_CONFIGS"}
         },
         "node_b": {
             "container_image": "netem_ion",
@@ -31,19 +31,25 @@
             "mounts": [["mounts/node_b", "/netem/mounts/node_b"]],
             "working_dir": "/netem/mounts/node_b",
             "ion_config": {"node_number": 2,
-                           "config_dir": "mounts/node_b"}
+                           "config_dir": "/netem/mounts/node_b/ION_CONFIGS"}
         },
         "node_c": {
             "container_image": "netem_ion",
             "ipv4_addresses": [["bc", "10.45.7.2"]],
             "mounts": [["mounts/node_c", "/netem/mounts/node_c"]],
             "working_dir": "/netem/mounts/node_c",
-            "ion_config": {"config_dir": "mounts/node_c"}
+            "ion_config": {"config_dir": "/netem/mounts/node_c/ION_CONFIGS"}
         }
     },
     
     "commands": [
-        {"time":-10, "nodes": ["HOST"],   "command": "cd /netem/mounts/global ; ./main.py -w node_a -w node_b -w node_c"},
-        {"time":-5,  "nodes": ["*"],      "command": "cd /netem/mounts/NETEM_NODE_NAME ; source ion.env ; ../global/start_ion.sh >& /netem/mounts/NETEM_NODE_NAME/start_ion.out ; sleep 1"}
+        {"time":-15, "nodes": ["node_a"],  "command": "rm -rf /netem/mounts/global/ION_contacts ; mkdir -p /netem/mounts/global/ION_contacts"},
+        {"time":-14, "nodes": ["*"],  "command": "/netem/mounts/global/ION/main.py -w NETEM_NODE_NAME"},
+        {"time":-13,  "nodes": ["*"],  "command": "cp /netem/mounts/NETEM_NODE_NAME/ION_CONFIGS/outbound_contacts.ionrc /netem/mounts/global/ION_contacts/NETEM_NODE_NAME_contacts.ionrc"},
+        {"time":-12,  "nodes": ["node_a"],  "command": "cat /netem/mounts/global/ION_contacts/node_*.ionrc > /netem/mounts/global/ION_contacts/all_contacts.ionrc"},
+        {"time":-11,  "nodes": ["*"],  "command": "cd /netem/mounts/NETEM_NODE_NAME/ION_CONFIGS ; source ion.env ; /netem/mounts/global/start_ion.sh >& /netem/mounts/NETEM_NODE_NAME/start_ion.out ; sleep 1"},
+        {"time": 0,   "nodes": ["*"],  "command": "cd /netem/mounts/global && ionadmin /netem/mounts/global/ION_contacts/all_contacts.ionrc && sleep 1"},
+        {"time": 20,  "nodes": ["node_a"], "command": "nohup bpecho ipn:1.1 >& /netem/mounts/node_a/bpecho.out &"},
+        {"time": 20,  "nodes": ["node_b"], "command": "nohup bpecho ipn:2.1 >& /netem/mounts/node_b/bpecho.out &"}
     ]
 }

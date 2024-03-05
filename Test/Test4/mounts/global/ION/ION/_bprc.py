@@ -110,7 +110,9 @@ a protocol udp 1400 100 1000000
         #
         # UDP indudcts
         #
-        if "udp" in self.inducts:
+        udp_inducts = [d for d in self.inducts if d.protocol=="udp"]
+        logger.info(f"udp inducts for {self.node_name}: {udp_inducts}")
+        if len(udp_inducts)>=0:
             fp.write(f"""\
 #
 # INDUCT_UDP

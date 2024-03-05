@@ -80,7 +80,7 @@ class ion_node(object):
 
     def write_configs(self, base_dir="."):
         # shutil.rmtree(self.output_directory, ignore_errors=True)
-        logger.info(f"Writing configs to {self.output_directory}")
+        logger.info(f"Writing configs for {self.node_name} to {self.output_directory}")
         os.makedirs(self.output_directory, exist_ok=True)
         self.write_ion_env()
         self.write_ionconfig()
@@ -120,7 +120,7 @@ class ion_node(object):
             fp.write(f"a range +0 +1000000 {self.node_number} {self.node_number} 1\n\n")
 
     def write_other_contacts(self):
-        the_filename = f"{self.output_directory}/outbound_contacts.ionsecrc"
+        the_filename = f"{self.output_directory}/outbound_contacts.ionrc"
         if os.path.exists(the_filename):
             os.remove(the_filename)
         with open(the_filename, "w") as fp:

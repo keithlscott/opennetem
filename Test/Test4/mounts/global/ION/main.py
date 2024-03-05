@@ -134,6 +134,9 @@ def make_ion_configs(scenario_info, container_info, args):
         print(f"Looking at node {node_name} for neighbors.")
         print(f"ion_configs[node] is {ion_configs[node]}")
 
+        logger.info(f"Adding 'loopack' udp induct to node {node_name}")
+        ion_config.add_induct("udp")   # Everybody gets a UDP loopback CLA
+
         my_networks = networks_of_node(container_info, node_name)
 
         #
@@ -169,6 +172,7 @@ def make_ion_configs(scenario_info, container_info, args):
         for ic in ion_configs:
             if ion_configs[ic][0]==node_name:
                 my_ion_config = ion_configs[ic][1]
+        
 
         # If I have no explicit outducts specified, generate one UDP outduct to each neighbor
         if "ion_config" not in scenario_info["node_configs"][node_name]:
@@ -212,7 +216,6 @@ def make_ion_configs(scenario_info, container_info, args):
         ion_config = ion_configs[node][1]
         if node_name not in args.write_configs:
             continue
-        logger.info(f"writing ion configs for {node_name}")
         ion_config.write_configs()
 
     return
@@ -221,7 +224,7 @@ def main():
     logger.info("Starting")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config_dir", "-c", default="/mounts/netem/globals/")
+    parser.add_argument("--config_dir", "-c", default="/netem/globals/")
     parser.add_argument("--write-configs", "-w", nargs="+", default=[], action="append")  # node names
     parser.add_argument("--base_dir", "-b", default=None)  # Base directory for ION config files
     args = parser.parse_args()
