@@ -128,13 +128,16 @@ a induct udp 0.0.0.0:4556 udpcli
         if len(udp_outducts)==0:
             logger.info(f"NO UDP outducts for {self.node_name}")
         for outduct in udp_outducts:
-            fp.write(f"a outduct udp {outduct.dest_identifier} udpclo\n")
+            fp.write(f"a outduct udp {outduct.dest_identifier}:4556 udpclo\n")
         
         fp.write("###################################\n\n")
 
         #
         # TCP Protocol
         #
+        tcp_inducts  = [d for d in self.inducts  if d.protocol=="tcp"]
+        tcp_outducts = [d for d in self.outducts if d.protocol=="tcp"]
+
         if "tcp" in self.protocols:
             fp.write(f"""\
 ###################################
@@ -157,17 +160,18 @@ a protocol tcp 1400 100 1000000
         #
         # TCP inducts
         #
-        if "tcp" in [x.protocol for x in self.inducts]:
+        if len(tcp_inducts)>0:
             fp.write("""a induct tcp 0.0.0.0:4556 tcpcli
 
 """)
+        elif len(tcp_outducts)>0:
+            fp.write("""a induct tcp 127.0.0.1:4556 tcpcli\n\n""")
 
         #
         # TCP outducts
         #
-        tcp_outducts = [d for d in self.outducts if d.protocol=="tcp"]
         for od in tcp_outducts:
-            fp.write(f"a outduct tcp {od.dest_identifier}\n\n")
+            fp.write(f"a outduct tcp {od.dest_identifier}:4556 tcpclo\n\n")
 
         fp.write("###################################\n\n")
 

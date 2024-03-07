@@ -22,4 +22,8 @@ def write_ipnrc(self):
     
     with open(the_filename, "w") as fp:
         for outduct in self.outducts:
-            fp.write(f"a plan {outduct.dest_node_number} {outduct.protocol}/{outduct.dest_identifier}\n")
+            if outduct.protocol in ["tcp", "udp"]:
+                fp.write(f"a plan {outduct.dest_node_number} {outduct.protocol}/{outduct.dest_identifier}:4556\n")
+            if outduct.protocol in ["ltp"]:
+                fp.write(f"a plan {outduct.dest_node_number} {outduct.protocol}/{outduct.dest_node_number}\n")
+

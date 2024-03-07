@@ -146,7 +146,7 @@ def make_ion_configs(scenario_info, container_info, args):
             # Add a UDP loopback convergence layer to self.
             if container_node == node_name:
                 logger.info(f"Adding UDP loopback for {node_name}")
-                ion_config.add_outduct("udp", ion_config.node_number, "127.0.0.1:4556", node_name)
+                ion_config.add_outduct("udp", ion_config.node_number, "127.0.0.1", node_name)
                 continue
             
             logger.info(f"Considering container_node {container_node} as potential neighbor")

@@ -1,9 +1,11 @@
 #!/bin/bash
 #LOG="/netsim/mounts/node_a/start_ion.log"
 #NODE_NAME="n1"
-LOG="start_ion2.log"
+LOG="start_ion.log"
 
 echo "" > $LOG
+echo "Removing old ion.log file" >> ${LOG}
+rm -f ion.log
 
 if [ -f ion.env ]; then
 	echo "Using environment information from ion.env."

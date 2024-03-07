@@ -105,8 +105,8 @@ class ion_node(object):
         if os.path.exists(the_filename):
             os.remove(the_filename)
         with open(the_filename, "w") as fp:
-            fp.write(f'NODE_NAME="{self.node_name}"\n')
-            fp.write(f'"NODE_NUMBER={self.node_number}"\n')
+            fp.write(f'NODE_NAME={self.node_name}\n')
+            fp.write(f'NODE_NUMBER={self.node_number}\n')
     
     def write_self_contacts(self):
         the_filename = f"{self.output_directory}/self_contacts.ionrc"

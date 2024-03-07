@@ -41,7 +41,7 @@ def write_ltprc(self):
         fp.write("1 10\n\n")
         ltp_outducts = [outduct for outduct in self.outducts if outduct.protocol=="ltp"]
         for outduct in ltp_outducts:
-            fp.write(f"a span {outduct.dest_node_number} 10 10 64000 100000 1 'udplso {outduct.dest_identifier} 1000000'\n")
+            fp.write(f"a span {outduct.dest_node_number} 10 10 64000 100000 1 'udplso {outduct.dest_identifier}:1113 1000000'\n")
         ltp_inducts = [induct for induct in self.inducts if induct.protocol=="ltp"]
         if len(ltp_inducts)>0:
             fp.write("s 'udplsi 0.0.0.0:1113'\n")
