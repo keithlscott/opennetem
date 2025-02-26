@@ -4,12 +4,18 @@ Installation
 
 Install Basic apt Packages
 ==========================
-sudo apt -y update
-sudo apt -y install git
-sudo apt -y install make
-sudo apt -y install sphinx-doc
-sudo apt -y install sphinx-common
-sudo apt -y install python3.10-venv
+
+  - ``sudo apt -y update``
+  - ``sudo apt -y install git``
+  - ``sudo apt -y install make``
+  - ``sudo apt -y install sphinx-doc``
+  - ``sudo apt -y install sphinx-common``
+  - ``sudo apt -y install python3.10-venv``
+  - ``sudo apt -y install bridge-utils``
+
+NOTE: bridge-utils is deprecated; need to figure out what the new
+tool is and how to invoke it.
+
 
 Install docker
 ===============
@@ -66,11 +72,11 @@ Git clone ....
 Make python3 virtual environment
 =================================
 As a normal user (not root) in the netem directory:
-``python3 -m venv netem_venv``
-``pip3 install docker``
-``pip3 install pandas``
-``pip3 install statsd-telegraf``
-``pip3 install influxdb_client``
+  - ``python3 -m venv netem_venv``
+  - ``pip3 install docker``
+  - ``pip3 install pandas``
+  - ``pip3 install statsd-telegraf``
+  - ``pip3 install influxdb_client``
 
 You can also use ``pip3 install -r requirements.txt``
 
@@ -80,9 +86,9 @@ source netem_env/bin/activate
 
 Build netem Images
 ==================
-In netem_images/netem1 directory: ./build.sh 
-In netem_images/netem_utilities directory: ./build.sh 
-In doc directory: make html 
+  - In netem_images/netem1 directory: ./build.sh 
+  - In netem_images/netem_utilities directory: ./build.sh 
+  - In doc directory: make html 
 
 Set Up the Monitoring Infrastructure
 ====================================
@@ -93,15 +99,16 @@ of the emulator.  If you need to shut it down for some reason,
 use ``docker compose down`` and then you can re-up it.
 
 In the netem/monitor directory:
-``./restore_volumes.sh``
-``docker compose up -d``
+  - ``./restore_volumes.sh``
+  - ``docker compose up -d``
+
 
 Run Test1
 =========
 
 Become root in the Test/Test1 directory
-cd Test/Test1
-sudo -E bash
+  - ``cd Test/Test1``
+  - ``sudo -E bash``
 
 Start the emulation with the test1_scenario.json file
 ../../netem_scenario.py ./test1_scenario.json

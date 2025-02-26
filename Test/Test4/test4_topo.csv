@@ -1,9 +1,9 @@
 ﻿Time,   Source,     Dest,       delay,      rate
-0,      node_a,     node_b,     0.125s,         100kbit
-,       node_b,     node_a,     0.125s,         150kbit
+0,      node_a,     node_b,     0.25s,      100kbit
+,       node_b,     node_a,     0.25s,      150kbit
 ,       node_b,     node_c,     0s,         100kbit
 ,       node_c,     node_b,     0s,         150kbit
-6000,   node_a,     node_b,     ,
+60000,  node_a,     node_b,     ,
 ,       node_b,     node_a,     ,
 ,       node_b,     node_c,     ,
 ,       node_c,     node_b,     ,

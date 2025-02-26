@@ -130,6 +130,8 @@ a induct udp 0.0.0.0:4556 udpcli
         for outduct in udp_outducts:
             fp.write(f"a outduct udp {outduct.dest_identifier}:4556 udpclo\n")
         
+        logging.info("TCP OUTDUCT is: {outduct}")
+        
         fp.write("###################################\n\n")
 
         #

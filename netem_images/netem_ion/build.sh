@@ -6,7 +6,7 @@
 #
 
 # translated into ion-open-source-${ION_VERSION} in the dockerfile
-ION_VERSION=4.1.2
+ION_VERSION=4.1.3
 
 NO_CACHE=""
 # uncomment to disable cache (redo apt update)

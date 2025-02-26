@@ -60,6 +60,19 @@ class ion_node(object):
             self.output_directory = f"{output_dir}/ION_{self.node_name}"
         logger.info(f"dir for ION configs for {self.node_name} is {self.output_directory}")
 
+
+    def __str__(self):
+        ret = ""
+        ret += f"ION Node ({self.node_name} :: {self.node_number})\n"
+        ret += f"  inducts:  {self.inducts}\n"
+        ret += f"  outducts: {self.outducts}\n"
+        return(ret)
+    
+
+    def __repr__(self):
+        return self.__str__()
+
+
     def add_induct(self, protocol):
         self.inducts += [induct(protocol)]
         if protocol not in self.protocols:

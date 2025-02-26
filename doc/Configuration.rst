@@ -14,7 +14,7 @@ containers.
 
 /netem/netem_tools
 ------------------
-``netem_tools`` is a read-only directory; mounted at ``/netem/netem_tools``.  It containers
+``netem_tools`` is a read-only directory; mounted at ``/netem/netem_tools``.  It contains
 applications and utilities designed to be run inside containers.
 
 

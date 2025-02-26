@@ -404,13 +404,12 @@ class time_variant_topology(object):
         logger.info("Augmenting container network info with docker network names.")
         for c in self.scenario.container_info:
             the_c = self.scenario.container_info[c]
-            # print(f"the_c is {the_c}")
             for intf in the_c:
                 print(f"looking for the_c ifindex {intf['ifindex']}")
                 for d in self.scenario.host_network_info:
                     # print(f"d is {d}")
                     # print(f"############################## the_c {intf['ifindex']}  d {d['link_index']}")
-                    if intf["ifindex"]==d["link_index"]:
+                    if (intf["ifindex"]==d["link_index"]) and (c==d['container_name']):
                         intf["network_name"] = d["network_name"]
 
 
