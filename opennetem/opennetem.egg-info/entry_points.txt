@@ -1,0 +1,5 @@
+[console_scripts]
+on_bplist = opennetem.on_bplist:do_main
+on_bpstats = opennetem.on_bpstats:do_main
+on_mon_rtt = opennetem.on_mon_rtt:do_main
+opennetem = opennetem.scenario:opennetem

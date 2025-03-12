@@ -1,23 +1,23 @@
-﻿Time,   Source,     Dest,       delay,      rate
-0,      node_a,     node_b,     0s,         100kbit
+﻿Time,   Source,     Dest,       delay,      rate,               Comments
+0,      node_a,     node_b,     0s,         100kbit,    A<==>B only for the first 30s
 ,       node_b,     node_a,     0s,         150kbit
-30,     node_a,     node_b,     3s,         100kbit
+30,     node_a,     node_b,     3s,         100kbit,    A<==>B<==>C
 ,       node_b,     node_a,     4s,         150kbit
 ,       ,           node_c,     2s,         50kbit
 ,       node_c,     node_b,     1s,         100kbit
-60,     node_a,     node_b,     ,
+60,     node_a,     node_b,     ,           ,           All Disconnected
 ,       node_b,     node_a,     ,
 ,       node_b,     node_c,     ,
 ,       node_c,     node_b,     ,
 90,     node_a,     node_b,     500ms,      100kbit
 ,       node_b,     node_c,     1400ms,     200kbit
 ,       ,           node_a,     2s,         150kbit
-,       node_c,     node_a,     1s,         100kbits
+,       node_c,     node_a,     1s,         100kbits,   Note link c->b doesn't come back
 120,    node_a,     node_b,     0.5s,       100kbit
 ,       node_b,     node_a,     0.5s,       150kbit
-150,    node_a,     node_b,     ,
-,       node_b,     node_a,     ,
-,       node_b,     node_c,     ,
+150,    node_a,     node_b,     ,               ,
+,       node_b,     node_a,     ,               ,
+,       node_b,     node_c,     ,               ,
 ,       node_c,     node_b,     500ms,      100kbit
 ,       node_b,     node_c,     1400ms,     200kbit
 ,       ,           node_a,     2s,         150kbit

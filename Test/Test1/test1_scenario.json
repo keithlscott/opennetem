@@ -4,8 +4,8 @@
     "start_on_minute": true,
 	"topology_filename": "test1_topo.csv",
 	"topology_filename_UNUSED": "test1_topo.xlsx",
-    	"topology_sheetname_UNUSED": "Sheet1",
-    	"networks": {
+    "topology_sheetname_UNUSED": "Sheet1",
+    "networks": {
         "ab": {
             "network": "10.44.3.0/24",
             "gateway": "10.44.3.254"
@@ -21,34 +21,32 @@
     },
     "node_configs": {
         "__global": {
-            "mounts": [["mounts/global", "/netem/mounts/global"]]
+            "mounts": [["mounts/scenario_global", "/netem/mounts/scenario_global"]]
         },
         "node_a": {
             "container_image": "netem1",
             "ipv4_addresses": [["ab", "10.44.3.1"], ["ac", "10.46.7.1"]],
-            "mounts": [["mounts/node_a", "/netem/mounts/node_a"]],
-            "working_dir": "/netem/mounts/node_a"
+            "working_dir": "/netem/mounts/node"
         },
         "node_b": {
             "container_image": "netem1",
             "ipv4_addresses": [["ab", "10.44.3.2"], ["bc", "10.45.7.1"]],
-            "mounts": [["mounts/node_b", "/netem/mounts/node_b"]],
-            "working_dir": "/netem/mounts/node_b"
+            "working_dir": "/netem/mounts/node"
         },
         "node_c": {
             "container_image": "netem1",
             "ipv4_addresses": [["bc", "10.45.7.2"], ["ac", "10.46.7.2"]],
-            "mounts": [["mounts/node_c", "/netem/mounts/node_c"]],
-            "working_dir": "/netem/mounts/node_c"
+            "working_dir": "/netem/mounts/node"
         }
     },
     "commands": [
-        {"time": -5, "nodes": ["node_a"], "command": "export foo=`cat /netem/globals/instance_info.json | jq '.start_time'`; ping -4 -c 60 10.44.3.2 | while read pong; do reltime=$(expr `date +'%s'` - $foo); echo `date +'%Y-%m-%d_%H:%M:%S,%N'` $reltime $pong; done > /netem/mounts/node_a/a_to_b_ping.txt"},
-        {"time": -5, "nodes": ["node_b"], "command": "echo `date +'%s.%N'` > /netem/mounts/NETEM_NODE_NAME/b_at_minus_5"},
-        {"time": -3, "nodes": ["node_a"], "command": "/netem/netem_tools/ping_monitor.py --use-ipv4 --target 10.44.3.2 --count=10000 --influxdb --verbose &> /netem/mounts/node_a/ping_monitor.out"},
-        {"time": -2, "nodes": ["node_a"], "command": "tcpdump -nn -l -i any icmp -w /netem/mounts/node_a/ping_monitor.pcap"},
-        {"time": 15, "nodes": ["*"],      "command": "echo `date +'%s.%N'` > /netem/mounts/NETEM_NODE_NAME/t_15"},
-        {"time": 30, "nodes": ["node_a"], "command": "ls -lR /etc > /netem/mounts/NETEM_NODE_NAME/ls_1.txt"},
-        {"time": 45, "nodes": ["node_a", "node_b"], "command": "ls -lR /netem > /netem/mounts/NETEM_NODE_NAME/ls_2.txt"}
+        {"time": -5, "nodes": ["node_a"], "command": "export foo=`cat /netem/mounts/global/instance_info.json | jq '.start_time'`; ping -4 -c 60 10.44.3.2 | while read pong; do reltime=$(expr `date +'%s'` - $foo); echo `date +'%Y-%m-%d_%H:%M:%S,%N'` $reltime $pong; done > /netem/mounts/node_a/a_to_b_ping.txt"},
+        {"time": -5, "nodes": ["node_b"], "command": "echo `date +'%s.%N'` > /netem/mounts/node/b_at_minus_5"},
+        {"time": -4, "nodes": ["HOST"],   "command": "ls -l > host_command_1.txt"},
+        {"time": -3, "nodes": ["node_a"], "command": "/netem/netem_tools/ping_monitor.py --use-ipv4 --target 10.44.3.2 --count=10000 --influxdb --verbose &> /netem/mounts/node/ping_monitor.out"},
+        {"time": -2, "nodes": ["node_a"], "command": "tcpdump -nn -l -i any icmp -w /netem/mounts/node/ping_monitor.pcap"},
+        {"time": 15, "nodes": ["*"],      "command": "echo `date +'%s.%N'` > /netem/mounts/node/t_15"},
+        {"time": 30, "nodes": ["node_a"], "command": "ls -lR /etc > /netem/mounts/node/ls_1.txt"},
+        {"time": 45, "nodes": ["node_a", "node_b"], "command": "ls -lR /netem > /netem/mounts/node/ls_2.txt"}
     ]
 }

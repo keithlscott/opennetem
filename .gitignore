@@ -6,7 +6,13 @@ __pycache__
 **._*
 **/netem/globals
 netem_env
-netem.log
+
+**/global/container_info.json
+**/global/instance_info.json
+**/global/scenario.json
+**/global/scenario_info.json
+
+**/opennetem.log
 
 doc/_build
 **__pycache__

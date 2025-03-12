@@ -51,7 +51,6 @@ services:
     volumes:
       - "monitor_grafana-data:/var/lib/grafana"
 
-
   influxdb:
     image: influxdb:latest
     volumes:
