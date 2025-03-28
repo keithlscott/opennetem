@@ -33,7 +33,21 @@ import json
 
 logger = logging.getLogger("opennetem.network")
 
-def df_to_network(df):
+class MultiTopologyError(Exception):
+    def __init__(self, msg="df_to_network called with multiple configs, expected a unique time element"):
+        super().__init__(self.msg)
+
+    def __str__(self):
+        return f'{self.msg}'
+
+
+def df_to_network(df: pandas.DataFrame) -> nx.DiGraph:
+    """Convert a dataframe representing a network topology configuration to a networkX network."""
+
+    the_times = df['time'].unique()
+    if len(list(the_times)) > 1:
+        raise MultiTopologyError()
+    
     all_unique = []
     sources = df["source"].unique()
     dests = df["dest"].unique()
@@ -52,35 +66,37 @@ def df_to_network(df):
         else:
             G.add_edge(row["source"], row["dest"])
 
-    print(G)
-    print(G.nodes)
-    print(G.edges)
+    # print(G)
+    # print(G.nodes)
+    # print(G.edges)
 
     return(G)
 
 
-def df_to_network_list(df):
+def df_to_network_list(df: pandas.DataFrame) -> nx.DiGraph:
+    """Convert a dataframe representing multiple network topologies into a list of networkX DiGraphs"""
+
     logger.info(f"Column names: {list(df)}")
     the_times = df['time'].unique()
 
     pos = None
     graphs = []
     for t in the_times:
-        print(f"topology at time {t}")
         tmp_df = df.loc[df["time"] == t]
-        print(tmp_df)
-        print()
         G = df_to_network(tmp_df)
         G.opennetem_time = int(t)
         graphs += [G]
     return(graphs)
 
 
-def make_topology_figures(topology_df, dir_name="./topology_images"):
-    """Generate png files representing the network topology at each timestep.
+def make_topology_figures(topology_df: pandas.DataFrame, dir_name:str ="./topology_images") ->list[plt.figure]:
+    """Generate png files representing the network topology at each timestep of the topology_df.
 
-    Files are written to .topology_images and inserted into the influxDB for
-    display in Grafana.
+    Files are written to .topology_images and returned as a list.
+
+    Args:
+        topology_df (pandas.DataFrame): Dataframe of network topologies.
+        dir_name (str): directory into which to write the png files
     """
     the_times = topology_df['time'].unique()
 
@@ -107,13 +123,9 @@ def make_topology_figures(topology_df, dir_name="./topology_images"):
     else:
         pos = nx.spring_layout(all_possible)
 
-        print("Graph positions: ")
+        logger.info("FIXME: set graph positions in scenario file not separate text file.")
         with open("/var/run/opennetem/node_positions.txt", "w") as fp:
                 fp.write(str({x, list(pos[x])} for x in pos))
-        print(pos["node_a"])
-        print(type(pos["node_a"]))
-
-    print(pos)
     
     #
     # Make topology_images directory and remove everything from it.
@@ -130,6 +142,7 @@ def make_topology_figures(topology_df, dir_name="./topology_images"):
         except Exception as e:
                 print('Failed to delete %s. Reason: %s' % (file_path, e))
 
+    all_figs = []
     for g in graphs:
         fig = plt.figure(figsize=(12,12))
         fig.suptitle(f"Topology at time {g.opennetem_time}", fontsize=16)
@@ -146,6 +159,9 @@ def make_topology_figures(topology_df, dir_name="./topology_images"):
 
         plt.tight_layout()
         plt.savefig(f"{dir_name}/time_{g.opennetem_time}.png", format="PNG")
+        all_figs += [fig]
+    
+    return(all_figs)
 
 
 def base64_figures(dir_name):

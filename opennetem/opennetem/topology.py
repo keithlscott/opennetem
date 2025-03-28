@@ -109,13 +109,14 @@ class time_variant_topology(object):
         self.df.columns = self.df.columns.str.lower()
 
         logger.debug(f"After converting to lower self.df is:")
+
+        self.fill_topo_df()
+    
         tmp = str(self.df)
         tmp_lines = tmp.split("\n")
         for l in tmp_lines:
             logger.debug(l)
 
-        self.fill_topo_df()
-    
 
     # Fill in elided topology columns elements as needed
     # df["col"][row_indexer] = value
@@ -150,8 +151,6 @@ class time_variant_topology(object):
                 logger.fatal(f"Can't fill_topo_df for row {row}")
                 sys.exit(0)
                 
-        logger.debug(f"\n{self.df}")
-
 
     def read_topofile_json(self, filename):
         with open(filename, "r") as fp:

@@ -38,7 +38,7 @@ class influxdb_writer(object):
             # print(f"One write dictionary is: {dictionary}")
             try:
                 # ret = self.client.write(bucket="netem", org="netem", record=dictionary)
-                print(f"writing record {json.dumps(res, indent=2)}")
+                # print(f"writing record {json.dumps(res, indent=2)}")
                 ret = self.client.write(record=res)
                 all_ret += [ret]
             except Exception as e:
@@ -82,8 +82,8 @@ def bpstats(docker_client, rtinfo):
         #     [2025/03/07-16:04:45] [x] exp from 1970/01/01-00:00:00 to 2025/03/07-16:04:45: (0) 0 0 (1) 0 0 (2) 0 0 (+) 0 0
         #     [2025/03/07-16:04:45] [i] ...end of statistics snapshot.
             tmp = future.result().output.decode("utf-8")
-            print(f"---- {the_source} vvvv")
-            print(tmp)
+            # print(f"---- {the_source} vvvv")
+            # print(tmp)
             lines = tmp.split("\n")
 
             tags = {"send_time": str(start_time),
@@ -107,9 +107,6 @@ def bpstats(docker_client, rtinfo):
     
     return(results)
 
-
-if __name__=="__main__":
-    do_main()
 
 def do_main():
     client = docker.from_env()
@@ -166,7 +163,7 @@ def do_main():
                     raise(concurrent.futures._base.TimeoutError())
                 
                 for future in concurrent.futures.as_completed(futures, timeout=1):
-                    print(f"A future became available from {len(futures)} futures; future has {len(future.result())} results.")
+                    # print(f"A future became available from {len(futures)} futures; future has {len(future.result())} results.")
                     # print(future.results())
                     # print("resetting timeouts 2")
                     timeouts = 0
@@ -184,7 +181,6 @@ def do_main():
                     # ]
 
                     all_ret = foo.write_value(future.result())
-                    print(f"return from ifluxdb write: {all_ret}")
 
                     to_remove += [future]
 
@@ -215,3 +211,8 @@ def do_main():
             time.sleep(to_sleep)
 
     print("############")
+
+
+if __name__=="__main__":
+    do_main()
+

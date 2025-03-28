@@ -50,12 +50,12 @@ class influxdb_writer(object):
     def write_value(self, list_of_dicts):
         all_ret = []
 
-        print(f"Writing result value: {list_of_dicts}")
+        # print(f"Writing result value: {list_of_dicts}")
         for res in list_of_dicts:
             # print(f"One write dictionary is: {dictionary}")
             try:
                 # ret = self.client.write(bucket="netem", org="netem", record=dictionary)
-                print(f"writing record {json.dumps(res, indent=2)}")
+                # print(f"writing record {json.dumps(res, indent=2)}")
                 ret = self.write_api.write(bucket="netem", org="netem", record=res)
                 all_ret += [ret]
             except Exception as e:
@@ -64,10 +64,15 @@ class influxdb_writer(object):
 
         return (all_ret)
     
+
     def delete(self, fromtime, totime, measurement, bucket, org):
-        print(f"delete called with measurement_name={measurement}")
+        # print(f"delete called with measurement_name={measurement}")
         the_thing = f'_measurement="{measurement}"'
-        self.delete_api.delete(fromtime, totime, the_thing, bucket, org)
+        try:
+            self.delete_api.delete(fromtime, totime, the_thing, bucket, org)
+        except Exception as e:
+            print("FIXME in on_bplist influxdb support")
+
 
 def parse_bplist(bplist):
     ret = []
@@ -83,8 +88,8 @@ def parse_bplist(bplist):
         if the_dict != {}:
             ret += [the_dict]
 
-    print("returning from parse_bplist")
-    print(ret)
+    # print("returning from parse_bplist")
+    # print(ret)
     return(ret)
 
 all_ever = {} #{at_node: [(source_node, dest_node)]}
@@ -172,9 +177,9 @@ def bplist(docker_client, rtinfo):
                              done_this_time[the_source] += [(from_node_number, to_node_number)]
 
     # Now for all n:(s,d) elements in all_ever that we did NOT do this time, enter zero
-    print("Now looking to zero out stuff")
-    print(f"all_ever is: {all_ever}")
-    print(f"done_this_time is: {done_this_time}")
+    # print("Now looking to zero out stuff")
+    # print(f"all_ever is: {all_ever}")
+    # print(f"done_this_time is: {done_this_time}")
 
     for at_node in done_this_time:
         if at_node not in all_ever:
@@ -212,9 +217,6 @@ def bplist(docker_client, rtinfo):
     return(results)
 
      
-if __name__=="__main__":
-    do_main()
-
 def do_main():
     client = docker.from_env()
 
@@ -295,14 +297,13 @@ def do_main():
                 
                 for future in concurrent.futures.as_completed(futures, timeout=1):
                     # print(f"A future became available from {len(futures)} futures; future has {len(future.result())} results.")
-                    print(future.result())
-                    print("resetting timeouts 2")
+                    # print(future.result())
+                    # print("resetting timeouts 2")
                     timeouts = 0
 
                     print(f"Result of bplist is: {future.result()}")
 
                     all_ret = foo.write_value(future.result())
-                    # print(f"return from ifluxdb write: {all_ret}")
 
                     to_remove += [future]
 
@@ -311,12 +312,12 @@ def do_main():
                 to_remove = []
 
             except concurrent.futures._base.TimeoutError as e:
-                print(f"Futures timeout: {e}")
+                # print(f"Futures timeout: {e}")
                 timeouts += 1
                 next_time = time.time() + measurement_interval
 
             except docker.errors.NotFound or docker.errors.APIError as e:
-                print(f"Docker container not found: {e.args}")
+                # print(f"Docker container not found: {e.args}")
                 time.sleep(5)
                 client = docker.from_env()
                 rtinfo = opennetem_runtime.opennetem_runtime()
@@ -332,4 +333,9 @@ def do_main():
             to_sleep = max(0, sleep_diff)
             time.sleep(to_sleep)
 
-    print("############")
+    # print("############")
+
+
+if __name__=="__main__":
+    do_main()
+

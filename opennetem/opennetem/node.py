@@ -6,16 +6,18 @@
 #
 
 import shutil
+import json
 import docker
 import os
 import opennetem.my_logging as my_logging
+
 
 logger = my_logging.get_sublogger("node")
 
 class opennetem_node(object):
     # node_config is the node's entry from the node_configs
     # portion of the scenario config file
-    def __init__(self, scenario, node_name, node_config):
+    def __init__(self, scenario, node_name: str, node_config: dict) -> None:
         self.scenario = scenario
         self.client = docker.from_env()
         self.node_name = node_name
@@ -33,7 +35,11 @@ class opennetem_node(object):
 
     def create_container(self):
         my_host_dir = f"{self.scenario.scenario_dir}/mounts/{self.node_name}"
-        logger.info(f"Creating container {self.node_name} with:\n{self.node_config}")
+        logger.info(f"Creating container {self.node_name} with:")
+        tmp_str = json.dumps(self.node_config, indent=2)
+        lines = tmp_str.split("\n")
+        for l in lines:
+            logger.info(f"{l}")
 
         try:
             os.makedirs(my_host_dir, mode = 0o777, exist_ok=True)

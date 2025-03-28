@@ -60,40 +60,37 @@ class influxdb_writer(object):
         return (all_ret)
     
 
-def ping_one_host(host):
-    # print(f"pinging {host}")
-    res = ping(host)
-    lines = list(res)
-    # print(lines)
-    # print(f"type of lines[0] is {type(lines[0])}")
-    if str(lines[0]).find("Request timed out")>=0:
-        rtt = {}
-    else:
-        rtt = {host, 1.2}
-    return(rtt)
-
-def ping_search(ipv4Network):
-    the_hosts = list(ipv4Network.hosts())
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=300) as executor:
-        futures = []
-
-        # print("Appending futures...")
-        for host in the_hosts:
-            futures.append(executor.submit(ping_one_host, host=host.__format__("s")))
-
-        # print("Now printing results...")
-        for future in concurrent.futures.as_completed(futures):
-            if future.result()!={}:
-                pass
-                print(future.result())
-
-    return
+# def ping_one_host(host):
+#     # print(f"pinging {host}")
+#     res = ping(host)
+#     lines = list(res)
+#     # print(lines)
+#     # print(f"type of lines[0] is {type(lines[0])}")
+#     if str(lines[0]).find("Request timed out")>=0:
+#         rtt = {}
+#     else:
+#         rtt = {host, 1.2}
+#     return(rtt)
 
 
-def myfunc(arg):
-    print("Starting myfunc")
-    time.sleep(arg)
+# def ping_search(ipv4Network):
+#     the_hosts = list(ipv4Network.hosts())
+
+#     with concurrent.futures.ThreadPoolExecutor(max_workers=300) as executor:
+#         futures = []
+
+#         # print("Appending futures...")
+#         for host in the_hosts:
+#             futures.append(executor.submit(ping_one_host, host=host.__format__("s")))
+
+#         # print("Now printing results...")
+#         for future in concurrent.futures.as_completed(futures):
+#             if future.result()!={}:
+#                 pass
+#                 print(future.result())
+
+#     return
+
 
 def ping_search3(docker_client, rtinfo):
 
@@ -145,9 +142,6 @@ def ping_search3(docker_client, rtinfo):
     return(results)
 
 
-if __name__=="__main__":
-    do_main()
-
 def do_main():
     client = docker.from_env()
 
@@ -161,8 +155,6 @@ def do_main():
     print("Now doing multiple results")
     futures = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=30) as executor:
-        result_matrices = {}
-        count = 0
         next_time = time.time()
         timeouts = 0
         max_timeouts = 3
@@ -203,7 +195,7 @@ def do_main():
                     raise(concurrent.futures._base.TimeoutError())
                 
                 for future in concurrent.futures.as_completed(futures, timeout=1):
-                    print(f"A future became available from {len(futures)} futures; future has {len(future.result())} results.")
+                    # print(f"A future became available from {len(futures)} futures; future has {len(future.result())} results.")
                     # print(future.results())
                     # print("resetting timeouts 2")
                     timeouts = 0
@@ -221,7 +213,6 @@ def do_main():
                     # ]
 
                     all_ret = foo.write_value(future.result())
-                    print(f"return from ifluxdb write: {all_ret}")
 
                     to_remove += [future]
 
@@ -252,3 +243,8 @@ def do_main():
             time.sleep(to_sleep)
 
     print("############")
+
+
+if __name__=="__main__":
+    do_main()
+

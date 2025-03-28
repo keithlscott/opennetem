@@ -48,7 +48,7 @@ class influxdb_support(object):
                 "tags": tags_dict,
                 "fields": fields_dict,
             }
-            logger.debug(f"Logging dict to influxdb: {dictionary}")
+            # logger.debug(f"Logging dict to influxdb: {dictionary}")
             ret = self.write_api.write(bucket="netem", org="netem", record=dictionary)
         except Exception as e:
             logger.warning(f"Error writing to influxdb: {e}")
@@ -58,14 +58,15 @@ class influxdb_support(object):
     def delete(self, fromtime, totime, measurement_name, bucket, org):
         the_thing = f'_measurement="{measurement_name}"'
         logger.debug(f"Delete api {fromtime} {totime} {the_thing} {bucket} {org}")
-        self.delete_api.delete(fromtime, totime, the_thing, bucket, org)
-
-    def write_point(self, point):
-         logger.info(f"Logging point to influxdb: {point}")
-         self.write_api.write(bucket="netem", org="netem", record=point)
+        try:
+            self.delete_api.delete(fromtime, totime, the_thing, bucket, org)
+        except Exception as e:
+            logger.warning(f"Error deleting from influxdb: {e}")
 
 
 def apply_to_all_containers(func):
+    """Apply func to all docker containers with the label 'netem_node'=True"""
+
     logger.info(f"In apply_to_all_containers {func.__name__}")
     # containers = client.containers.list(all=True, filters={"name": "netem*"})
     containers = client.containers.list(all=True, filters={"label": ["netem_node=True"]})

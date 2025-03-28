@@ -16,6 +16,7 @@ import subprocess
 import math
 import re
 
+import urllib3
 import json
 import datetime
 import time
@@ -30,6 +31,7 @@ import statsd
 
 import logging
 import opennetem.my_logging as my_logging
+import pandas
 
 from influxdb_client import Point
 
@@ -164,7 +166,7 @@ class netem_scenario(object):
         self.topology_figures = opennetemnetwork.base64_figures("./topology_images")
 
 
-    def list_networks(self):
+    def list_networks(self) -> list[str]:
         """Return a list of the network names in the scenario."""
         networks = []
         for node in self.scenario_dict["node_configs"]:
@@ -175,12 +177,13 @@ class netem_scenario(object):
         return(networks)
     
 
-    def instantiate_one_node(self, node_name, node_info):
+    def instantiate_one_node(self, node_name: str, node_info: dict) -> None:
+        "Instantiate a new Docker container representing a node in the network."
         tmp_node = node.opennetem_node(self, node_name, node_info)
         self.nodes[node_name] = tmp_node
         return
     
-    
+
     def instantiate_nodes(self):
         # Note that global node_configs should have already been merged into the individual
         # nodes' configs
@@ -249,17 +252,15 @@ class netem_scenario(object):
         self.topology.instantiate_networks()
 
 
-    #
-    # This thread handles processing commands for all links whose (src,dst)
-    # pairs are in the 'node_pairs' keyword arg.
-    #
-    # node_pairs should be a list of (from, to) node names e.g.:
-    # [('netem_node_a', 'netem_node_b'), ('netem_node_b', 'netem_node_a')]
-    #
-    # The caller needs to ensure that all links are assigned to exactly one
-    # link_management_thread.
-    #
     class link_management_thread(threading.Thread):
+        """Handle processing commands for all links whose (src,dst) pairs are in the 'node_pairs' init keyword arg.
+        
+        Node pairs should be a list of (from, to) node names e.g.:
+            [('netem_node_a', 'netem_node_b'), ('netem_node_b', 'netem_node_a')]
+
+        The caller needs to ensure that all links are assigned to exactly one
+        link_management_thread."""
+
         def __init__(self, group=None, target=None, name=None,
                args=(), kwargs=None, verbose=None):
             self.logger = my_logging.get_sublogger(f"linkManagement", parent="opennetem.scenario")
@@ -332,7 +333,13 @@ class netem_scenario(object):
     # command_row is a dataframe row from the topology df
     # This is the 'target' function of a threading.Thread instance, so the fact that we're running
     # the subprocess tc qdisc change command synchronously shouldn't be a problem, I don't think.
-    def change_link_params(self, command_row, host_interface):
+    def change_link_params(self, command_row: pandas.DataFrame, host_interface: str) -> None:
+        """This is invoked as a thread to change link parameters.
+        command_row is a dataframe row from the topology df
+        Since this is the 'target' function of a threading.Thread instance, so the fact that we're running
+        the subprocess tc qdisc change command synchronously shouldn't be a problem, I don't think.       
+        """
+
         # logger = my_logging.get_sublogger("scenario")
         my_logger = my_logging.get_sublogger("link_management", parent="opennetem.scenario")
 
@@ -366,37 +373,15 @@ class netem_scenario(object):
         self.influxdb_support.write_value("topology_change_times",
                                     f"Topology change at t={self.reltime.get_reltime():.3f}",
                                     other_fields_dict=other_fields)
-
-        # # self.statsd_client.gauge("netem_event", 1, tags={"event": "link_change"})
-        # #
-        # # Log to influxdb so we can indicate the time of the link change.
-        # #
-        # # point = (
-        # #     Point("link_change")
-        # #         .tag("delay", command_row['delay'])
-        # #         .field("temp_value", 1)
-        #   #     )
-        # # self.influxdb_support.write_point(point=point)
-
-        # tags_dict = {"source": tmp2["source"],
-        #              "dest":   tmp2["dest"]}
-        # other_params = {}
-        # # other_params = {"latency": command_row["delay"],
-        # #                 "delay": command_row["delay"],
-        # #                   "loss":  command_row["loss"],
-        # #                 "const": 4}
-        # self.influxdb_support.write_value(measurement_name="link_change", measurement_val=1,
-        #                             tags_dict = tags_dict,
-        #                             other_fields_dict = other_params)
         
         self.log_current_time()
 
         return
 
 
-    def update_topology_image(self):
-        # See if there's a topology picture that needs to be jammed into 
-        # influxdb for display in Grafana
+    def update_topology_image(self) -> None:
+        """Write the current topology image to influxdb if necessary."""
+
         if len(self.topology_figures)>0 and \
                 (self.last_figure_time==None or self.topology_figures[0][0]<=self.reltime.get_reltime()):
             self.influxdb_support.write_value("topology_image", self.topology_figures[0][1], other_fields_dict={})
@@ -404,16 +389,16 @@ class netem_scenario(object):
             self.last_figure_time = self.reltime.get_reltime()
 
 
-    #
-    # This thread handles processing all commands for all nodes in the node_list
-    # keyword argument.  This might be just one node, or we might assign multiple
-    # nodes to a single command processing thread (might be useful if we have
-    # hundreds of nodes, e.g.)
-    #
-    # The caller needs to ensure that enough cmd_processing_threads are instantiated
-    # to cover all the nodes.
-    #
     class cmd_processing_thread(threading.Thread):
+        """Process in-node commands
+        
+        This thread handles processing all commands for all nodes in the node_list
+        keyword argument.  This might be just one node, or we might assign multiple
+        nodes to a single command processing thread (might be useful if we have
+        hundreds of nodes, e.g.)
+
+        The caller needs to ensure that enough cmd_processing_threads are instantiated
+        to cover all the nodes."""
 
         #
         # We first run through all the commands and pick out only those that we
@@ -535,8 +520,7 @@ class netem_scenario(object):
                     remove_dead_threads()
                     time.sleep(next_time-time.time())
                 self.logger.info(f"Thread {self.name} executing command {next_command} on node {next_command['node_name']}")
-                # Should probably 
-                # result = self.client.containers.exec_run(next_command["container"])
+
                 if next_command["container"]!=None:
                     foo = threading.Thread(name=f"{next_command['container'].name} : {next_command['command']}",
                             target=next_command["container"].exec_run,
@@ -558,6 +542,7 @@ class netem_scenario(object):
 
             remove_dead_threads()
 
+
         def status(self):
             self.remove_dead_threads()
             ret = {}
@@ -566,9 +551,10 @@ class netem_scenario(object):
             for t in self.threads:
                 ret["active_threads"] += t.__name__
 
-    # The netem_scenario class isn't really a thread, but we do have this run
+
+    # The netem_scenario class isn't really a *thread*, but we do have this run
     # method
-    def run(self):
+    def run(self) -> None:
         self.logger.debug("Start of scenario run loop.")
         print("Start of scenario run loop.")
         
@@ -627,15 +613,17 @@ class netem_scenario(object):
 
         # Write the network names into the influxdb database so we can use them in dashboards
         self.influxdb_support.delete('1970-01-01T00:00:00Z', '2050-04-27T00:00:00Z',
-                                     measurement_name="network_names", bucket="netem", org="netem")
+                                    measurement_name="network_names", bucket="netem", org="netem")
         for network_name in list(self.scenario_dict["networks"].keys()):
             self.influxdb_support.write_value(measurement_name="network_names", measurement_val=network_name,
                                         tags_dict = {},
                                         other_fields_dict = {})
-        
+        # except urllib3.exceptions.NewConnectionError:
+        #     self.logger.warning(f"Can't connect to influxDB to delete old info.")
+
         # Write the node names into the influxdb database so we can use them in dashboards
         self.influxdb_support.delete('1970-01-01T00:00:00Z', '2050-04-27T00:00:00Z',
-                                     measurement_name="node_names", bucket="netem", org="netem")
+                                    measurement_name="node_names", bucket="netem", org="netem")
         for node_name in list(self.scenario_dict["node_configs"].keys()):
             self.influxdb_support.write_value(measurement_name="node_names", measurement_val=node_name,
                                         tags_dict = {},
@@ -687,7 +675,7 @@ class netem_scenario(object):
         self.link_management_threads += [t]
 
         #
-        # Wait for the start time.  Note that commands may be executing in
+        # Wait for the start time.  Note that per-node commands may be executing in
         # the interim.
         #
         WAIT_TIME_THRESHOLD = 0.002
@@ -742,7 +730,8 @@ class netem_scenario(object):
                 self.logger.debug(f"Joined {t.name}")
 
 
-    def log_current_time(self, the_value=None):
+    def log_current_time(self, the_value: None|float = None) -> None:
+        """Log current time to influxDB measurement 'current_time'"""
         if the_value==None:
             the_value = int(self.reltime.get_reltime())
 
@@ -754,7 +743,8 @@ class netem_scenario(object):
 
     
 
-def opennetem():
+def opennetem() -> None:
+    """Main entry point for running an emulation"""
     global my_logging
     
     SOURCE_DIR = os.path.dirname(os.path.realpath(__file__))

@@ -1,5 +1,22 @@
 #!/usr/bin/env python3
 
+#
+# This program generates a set of (hopefully) workable ION configurations
+# from an opennetem scenario.
+#
+# To build the configuration files we need information from the scenario
+# file itself and we might also need information from the running
+# scenario (e.g. if IP addresses are auto-assigned).
+#
+# This code reads the scenario file and the container_info.json file that
+# gets generated when the scenario is isntantiated and marries up the
+# convergence layer adapter / IP addressing information between the two
+# to generate the ION config files.
+#
+# This code leverages an ion_configs dictionary that is kyed by node_number
+# and whose values are (node_name, ION.ion_node) tuples)
+
+
 import sys
 import json
 import ION
@@ -24,7 +41,11 @@ logger = logging.getLogger()
 
 
 
-
+#
+# Given the dictionary from the container_info.json file and a node name,
+# return a list of the opennetem-defined names of the networks to which
+# the node is attached, e.g.: ["ab", "bc"]
+#
 def networks_of_node(container_info, node_name):
         my_networks = []
 
@@ -39,17 +60,26 @@ def networks_of_node(container_info, node_name):
         return(my_networks)
 
 
-def node_name_from_number(ion_configs, peer_node_number):
+#
+# Given the dictionary from the container_info.json file and a node number,
+# return the opennetem node name of the node.
+#
+def node_name_from_number(ion_configs, node_number):
     for ic in ion_configs:
         print(ic)
         ion_config = ion_configs[ic]
         print(ion_config)
-        if ion_config[1].node_number==peer_node_number:
+        if ion_config[1].node_number==node_number:
             return ion_config[1].node_name
-    logger.warning("Can't find node name for node number {peer_node_number}")
+    logger.warning("Can't find node name for node number {node_number}")
     sys.exit(0)
 
 
+#
+# Given information about the emulation instance in container_info and
+# a pair of node names, return the IPv4 address of the neighbor on the
+# network that connects the nodes or None.
+#
 def addr_of_my_neighbor(container_info, my_name, neighbor_name):
     my_networks = networks_of_node(container_info, my_name)
     for interface in container_info[neighbor_name]:
@@ -68,6 +98,10 @@ def addr_of_node_on_network(container_info, node_name, net_name):
         if net["network_name"]==net_name:
             return net["addr_info"][0]["local"]  # NEEDS HELP
 
+#
+# Given a dictionary of ION configs {node_number, (node_name, ION.ion_node instance)}
+# and a node name, return the ION node number of the node.
+#
 def node_number_of(ion_configs, node_name):
     for ic in ion_configs:
         if ion_configs[ic][0]==node_name:
@@ -77,10 +111,11 @@ def node_number_of(ion_configs, node_name):
     return(None)
 
 
-def debug_print_config(ion_config):
-    print(f"")
-
-
+#
+# Given the opennetem scenario dictionary (scenario_info) and the dictionary
+# of instance-specific information (container_info), build a set of ION
+# configuration files for the various nodes.
+#
 def make_ion_configs(scenario_info, container_info, args):
     ion_configs = {}   # Keyed by node_number, values are (node_name, ION.ion_node instance tuples)
     next_auto_ion_node_number = 400000
@@ -91,12 +126,12 @@ def make_ion_configs(scenario_info, container_info, args):
             if node=="__global":
                 continue
             # Merge in global_config info with current node config
-            # print(f"Merging global config with config for {node}.")
-            # scenario_info["node_configs"][node].update(global_config)
-            # print(f"{node} info is now {scenario_info['node_configs'][node]}")
+            print(f"Merging global config with config for {node}.")
+            scenario_info["node_configs"][node].update(global_config)
+            print(f"{node} info is now {scenario_info['node_configs'][node]}")
     
     #
-    # Run through all the nodes in the scenario; crate ION instances
+    # Run through all the nodes in the scenario; crate ION.ion_node instances
     # and fill in ion node numbers.
     #
     for node in scenario_info["node_configs"]:
