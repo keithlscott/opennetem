@@ -2,7 +2,9 @@
 Scenario File format
 ====================
 
-The overall format of a scenario file is ::
+The overall format of a scenario file is
+
+.. code-block:: python
 
    {
        "Scenario": "test1",

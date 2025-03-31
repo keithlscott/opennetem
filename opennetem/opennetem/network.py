@@ -89,7 +89,9 @@ def df_to_network_list(df: pandas.DataFrame) -> nx.DiGraph:
     return(graphs)
 
 
-def make_topology_figures(topology_df: pandas.DataFrame, dir_name:str ="./topology_images") ->list[plt.figure]:
+def make_topology_figures(topology_df: pandas.DataFrame,
+                          dir_name:str ="./topology_images",
+                          node_positions: dict | None = None) ->list[plt.figure]:
     """Generate png files representing the network topology at each timestep of the topology_df.
 
     Files are written to .topology_images and returned as a list.
@@ -97,6 +99,7 @@ def make_topology_figures(topology_df: pandas.DataFrame, dir_name:str ="./topolo
     Args:
         topology_df (pandas.DataFrame): Dataframe of network topologies.
         dir_name (str): directory into which to write the png files
+        node_positions (dict{str: tuple}): nodes whose positions are given
     """
     the_times = topology_df['time'].unique()
 
@@ -111,22 +114,38 @@ def make_topology_figures(topology_df: pandas.DataFrame, dir_name:str ="./topolo
 
     #
     # Figure out node positions
+
     # Use a user-provided file if there is one, otherwise generate from a fully-
     # connected network.
     #
-    if os.path.exists("./node_positions.txt"):
-        logger.info("Using node positions from file.")
-        with open("./node_positions.txt") as fp:
-                data = fp.read().strip().rstrip()
-        pos = eval(data)           # This is a massive security hole
-
+    # if os.path.exists("./node_positions.txt"):
+    #     logger.info("Using node positions from file.")
+    #     with open("./node_positions.txt") as fp:
+    #             data = fp.read().strip().rstrip()
+    #     pos = eval(data)           # This is a massive security hole
+    if False:
+         pass
     else:
-        pos = nx.spring_layout(all_possible)
+        #
+        # Fix positions of nodes whose positions are provided,
+        # all others are assigned by the layout alg.
+        if node_positions != None:
+            fixed_positions = node_positions.keys()
+        else:
+            fixed_positions = None
 
-        logger.info("FIXME: set graph positions in scenario file not separate text file.")
+        logger.info(f"{node_positions = }")
+        logger.info(f"{fixed_positions = }")
+        pos = nx.spring_layout(all_possible,
+                               pos=node_positions,
+                               fixed = fixed_positions)
+
+        tmp = {}
+        for x in pos:
+            tmp[x] = list(pos[x])
         with open("/var/run/opennetem/node_positions.txt", "w") as fp:
-                fp.write(str({x, list(pos[x])} for x in pos))
-    
+            fp.write(str(tmp)+"\n")
+            
     #
     # Make topology_images directory and remove everything from it.
     #

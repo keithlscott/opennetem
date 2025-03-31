@@ -2,13 +2,30 @@
 
 
 # Install Python virtual environment
-apt install python3-virtualenv
+pip install virtualenv
 virtualenv venv
 source venv/bin/activate
-pip3 install -r requirements.txt
-deactivate
+#pip3 install -r requirements.txt
+#deactivate
 
-# Make documentation
+# Install opennetem
+pushd .
+pip3 install --editable .
+popd
+
+#
+# Link from 'user' opennetem executables installed by pyproject
+# to /usr/local/bin so that they're in root's path to make it
+# easier to run the emulator as root.
+# 
+echo "Linking opennetem executables to /usr/local/bin so that"
+echo "they're in root's path (using sudo)."
+EXECUTABLES="opennetem on_mon_rtt on_bplist on_bpstats"
+for item in $EXECUTABLES; do
+	sudo ln -s ~/.local/bin/${item} /usr/local/bin/$item
+done
+
+# Make opennetem html documentation
 cd doc
 make html
 cd ..

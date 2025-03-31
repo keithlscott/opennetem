@@ -82,6 +82,16 @@ class netem_scenario(object):
 
         self.info_dir = "/var/run/opennetem"
 
+        if os.getuid()!=0:
+            self.logger.warning("You probably want to run this as root in order to be able to modify link parameters.")
+            self.logger.warning("Abort or Continue (A/c)")
+            res = str(input())
+            if len(res)==0 or res[0]=="C" or res[0]=="c":
+                self.logger.warning("Continuing as non-root user.")
+            else:
+                self.logger.fatal("Canceling due to not being root.")
+                sys.exit(0)
+
         # Save our pid to self.info_dir.
         try:
             os.makedirs(self.info_dir, mode = 0o777, exist_ok=True)
@@ -162,7 +172,19 @@ class netem_scenario(object):
         # Generate png files for expected network connectivity over time and
         # make a list of pairs [[time, base64_of_figure], ...]
         #
-        opennetemnetwork.make_topology_figures(self.topology.df, "./topology_images")
+        known_positions = {}
+        for node in self.scenario_dict["node_configs"]:
+            if node=="__global":
+                continue
+            print(self.scenario_dict["node_configs"][node])
+            if "position" in self.scenario_dict["node_configs"][node]:
+                known_positions[node] = self.scenario_dict["node_configs"][node]["position"]
+        if known_positions == {}:
+            known_positions = None
+
+        opennetemnetwork.make_topology_figures(self.topology.df,
+                                               "./topology_images",
+                                               known_positions)
         self.topology_figures = opennetemnetwork.base64_figures("./topology_images")
 
 
@@ -404,6 +426,17 @@ class netem_scenario(object):
         # We first run through all the commands and pick out only those that we
         # manage and save them in our local command_list
         #
+        # We then hang around until we've launched all of the commands.
+        #
+        # FIXME: we exit after launching our last command, which may have started
+        #        a long-running command on the host (e.g. on_mon_bplist).  We really
+        #        need (I think) to pass in something more permanent (the scenario?)
+        #        so we can seriously kill those threads later.  But there's no good way
+        #        to forceably kill a thread https://discuss.python.org/t/how-kill-a-thread/42959/2
+        #        so.....
+        #        Maybe it's a requirement that long-running host processes like on_bpstats
+        #        exit when there are no nodes.
+        #
         def __init__(self, group=None, target=None, name=None,
                  args=(), kwargs=None, verbose=None):
             #self.logger = my_logging.get_sublogger(f"cmd_processing_thread")
@@ -413,6 +446,7 @@ class netem_scenario(object):
             self.args = args
             self.kwargs = kwargs
 
+            self._stop_event = threading.Event()  
             self.client = docker.from_env()
             self.scenario = self.kwargs["scenario"]
             self.node_list = self.kwargs["node_list"]
@@ -501,7 +535,12 @@ class netem_scenario(object):
 
             self.logger.info(f"Thread {self.name} done preprocessing commands")
 
+
+        def stop(self):
+            self.logger.info(f"stop() called on command processing thread {self.name}")
+            self._stop_event.set()
         
+
         # Run function for the cmd_processing_thread class
         def run(self):
             def remove_dead_threads():
@@ -512,6 +551,8 @@ class netem_scenario(object):
                         self.threads.remove(t)
 
             self.threads = []
+            #
+            # Maybe while(len(self.my_commands)>0 or len(self.threads)>0) and sleep 5 if len(self.my_commands==0)
             while len(self.my_commands)>0:
                 next_command = self.my_commands[0]
                 next_time = self.scenario.instance_info["start_time"] + next_command["time"]
@@ -530,7 +571,6 @@ class netem_scenario(object):
                     self.my_commands = self.my_commands[1:]
                 else:
                     # Run command on host
-                    self.logger.warning("HOST commands not fully implemented yet.")
                     foo = threading.Thread(name=f"HOST: {next_command['command']}",
                             target=run_on_host,
                             args=(next_command["command"],))
@@ -540,7 +580,13 @@ class netem_scenario(object):
 
                 remove_dead_threads()
 
+                if self._stop_event.is_set():
+                    self.logger.info("Command processing thread notes that it is stopped.")
+                    break
+
             remove_dead_threads()
+
+            self.logger.info(f"Thread {self.name} done running (FIXME: may have left childen).")
 
 
         def status(self):
@@ -556,7 +602,6 @@ class netem_scenario(object):
     # method
     def run(self) -> None:
         self.logger.debug("Start of scenario run loop.")
-        print("Start of scenario run loop.")
         
         self.command_threads = []
         self.link_management_threads = []
@@ -618,8 +663,6 @@ class netem_scenario(object):
             self.influxdb_support.write_value(measurement_name="network_names", measurement_val=network_name,
                                         tags_dict = {},
                                         other_fields_dict = {})
-        # except urllib3.exceptions.NewConnectionError:
-        #     self.logger.warning(f"Can't connect to influxDB to delete old info.")
 
         # Write the node names into the influxdb database so we can use them in dashboards
         self.influxdb_support.delete('1970-01-01T00:00:00Z', '2050-04-27T00:00:00Z',
@@ -721,12 +764,14 @@ class netem_scenario(object):
         for t in thread_list:
             self.logger.info(f"    {t.name}")
         for t in self.command_threads:
+            t.stop()
             if t.is_alive():
                 while t.is_alive():
                     t_status = t.status()
                     self.logger.info(f"Joining {t.name} with {len(t_status['active_threads'])} threads")
                     t.join(5)
             else:
+                self.logger.info(f"Thread {t.name} is not alive.")
                 self.logger.debug(f"Joined {t.name}")
 
 
@@ -755,16 +800,6 @@ def opennetem() -> None:
     logger = logging.getLogger("opennetem")
 
     logger = my_logging.get_sublogger("scenario", parent="opennetem")
-
-    if os.getuid()!=0:
-        logger.warning("You probably want to run this as root in order to be able to modify link parameters.")
-        logger.warning("Abort or Continue (A/c)")
-        res = str(input())
-        if len(res)==0 or res[0]=="C" or res[0]=="c":
-            logger.warning("Continuing as non-root user.")
-        else:
-            logger.fatal("Canceling due to not being root.")
-            sys.exit(0)
 
     SOURCE_DIR = os.path.dirname(os.path.realpath(__file__))
     

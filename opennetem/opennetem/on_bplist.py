@@ -153,14 +153,11 @@ def bplist(docker_client, rtinfo):
                      toks2 = toks[1].split(".")
                      from_node_number = int(toks2[0])
                      from_service_number = int(toks2[1])
-                     print(f"toks2 is {toks2}")
                      for to_eid in tmp[from_eid]:
-                        print(f"to_node is {to_eid}")
                         toks3 = to_eid.split(":")
                         toks4 = toks3[1].split(".")
                         to_node_number = int(toks4[0])
                         to_service_number = int(toks4[1])
-                        print(f"toks4 is {toks4}")
                         tmp2 = {"measurement": "bplist",
                                 "fields": {"value": tmp[from_eid][to_eid]},
                                 "tags": {"node": the_source,
@@ -189,21 +186,16 @@ def bplist(docker_client, rtinfo):
                  all_ever[at_node] += [elem]
 
     for at_node in all_ever:
-        print(f"Looking to zero out queue sizes for node {at_node}")
-
         need_zeros = all_ever[at_node].copy()
-        print(f"need_zeros at node {at_node} is: {need_zeros}")
 
         if at_node in done_this_time:
             for the_pair in done_this_time[at_node]:
                 if the_pair in all_ever[at_node]:
-                    print(f"Removing {the_pair} from need_zeros")
                     need_zeros.remove(the_pair)
                     continue
                 all_ever[at_node] += [the_pair]
 
         for elem in need_zeros:
-            print(f"Zeroing out {elem} at node {at_node}")
             tmp2 = {"measurement": "bplist",
                     "fields": {"value": 0},
                     "tags": {"node": at_node,
@@ -251,7 +243,6 @@ def do_main():
         except:
              pass
         
-    print("Now doing multiple results")
     futures = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=30) as executor:
         result_matrices = {}
@@ -284,7 +275,6 @@ def do_main():
 
             if last_futures_len != len(futures):
                 last_futures_len = len(futures)
-                print("resetting timeouts 1")
                 timeouts = 0
 
             to_remove = []
@@ -300,8 +290,6 @@ def do_main():
                     # print(future.result())
                     # print("resetting timeouts 2")
                     timeouts = 0
-
-                    print(f"Result of bplist is: {future.result()}")
 
                     all_ret = foo.write_value(future.result())
 

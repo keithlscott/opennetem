@@ -1,6 +1,12 @@
 networks:
-  network:
-    name: netem_monitor
+  default:
+    labels:
+      - "opennetem_monitor_network=True"
+
+  # network:
+  #   name: netem_monitor
+  #   labels:
+  #     - "opennetem_network=True"
 
 volumes:
   monitor_prometheus-data:
@@ -9,6 +15,7 @@ volumes:
     external: true
   monitor_influxdb-data:
     external: true
+
 
 services:
   statsd_exporter:
@@ -19,6 +26,8 @@ services:
       - "9125:9125/udp"
     volumes:
       - "./statsd/:/tmp/statsd"
+    labels:
+      - "opennetem_monitor_node=True"
   
   
   collectd:
@@ -27,6 +36,8 @@ services:
       - 25826:25826
     command:
       - "--collectd.listen-address=:25826"
+    labels:
+      - "opennetem_monitor_node=True"
   
   
   prometheus:
@@ -42,6 +53,8 @@ services:
     volumes:
       - "./prometheus:/tmp/prometheus/"
       - "monitor_prometheus-data:/prometheus"
+    labels:
+      - "opennetem_monitor_node=True"
   
   
   grafana:
@@ -50,6 +63,9 @@ services:
       - "3000:3000"
     volumes:
       - "monitor_grafana-data:/var/lib/grafana"
+    labels:
+      - "opennetem_monitor_node=True"
+
 
   influxdb:
     image: influxdb:latest
@@ -61,10 +77,15 @@ services:
 #    entrypoint: ["./entrypoint.sh"]
     ports:
       - 8086:8086
+    labels:
+      - "opennetem_monitor_node=True"
+
 
   utilities:
     image: netem_utilities
     ports:
       - "9080:9080"
+    labels:
+      - "opennetem_monitor_node=True"
 
 

@@ -62,4 +62,7 @@ from the host.  Data written to such directories will persist once the scenario 
 
 The Monitor Stack
 =================
-
+opennetem comes with a monitoring stack with a couple of time-series databases and Grafana for
+visualization.  Pre-packaged docker volumes contain configuration information to get the
+stack running.  More information about the monitoring stack is availble in the
+:ref:`Monitoring` section.

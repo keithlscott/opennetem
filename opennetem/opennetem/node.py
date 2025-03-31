@@ -83,7 +83,7 @@ class opennetem_node(object):
                 privileged=True,
                 cap_add=["NET_ADMIN"],
                 hostname=self.node_name,
-                labels={"netem_node": "True"},
+                labels={"opennetem_node": "True"},
                 mounts=mounts,
                 working_dir=working_dir,
                 detach=True

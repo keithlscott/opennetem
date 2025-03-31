@@ -1,18 +1,21 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
 
 [project]
 name="opennetem"
 version = "0.2"
 dependencies = [
 	"pandas",
+	"networkx",
+	"matplotlib",
 	"certifi==2024.2.2",
 	"charset-normalizer==3.3.2",
 	"docker==7.0.0",
 	"et-xmlfile==1.1.0",
 	"idna==3.6",
 	"influxdb-client==1.40.0",
+	"influxdb3-python",
 	"numpy==1.26.4",
 	"openpyxl==3.1.2",
 	"packaging==23.2",

@@ -66,7 +66,7 @@ class time_variant_topology(object):
         network = self.scenario.client.networks.create(
             net_name,
             driver="bridge",
-            labels={"netem_network": "True"},
+            labels={"opennetem_network": "True"},
             ipam=ipam_config
         )
         return(network)

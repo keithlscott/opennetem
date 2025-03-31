@@ -65,11 +65,11 @@ class influxdb_support(object):
 
 
 def apply_to_all_containers(func):
-    """Apply func to all docker containers with the label 'netem_node'=True"""
+    """Apply func to all docker containers with the label 'opennetem_node'=True"""
 
     logger.info(f"In apply_to_all_containers {func.__name__}")
     # containers = client.containers.list(all=True, filters={"name": "netem*"})
-    containers = client.containers.list(all=True, filters={"label": ["netem_node=True"]})
+    containers = client.containers.list(all=True, filters={"label": ["opennetem_node=True"]})
 
     with multiprocessing.Pool(processes=3) as pool:
         container_names = [x.name for x in containers]
@@ -108,15 +108,15 @@ def run_command_in_all_containers(command):
 
 def remove_all_networks():
     # networks = client.networks.list(names="netem*")
-    networks = client.networks.list(filters={"label": ["netem_network=True"]})
+    networks = client.networks.list(filters={"label": ["opennetem_network=True"]})
     logger.info(f"Removing networks: {[x.name for x in networks]}")
     for n in networks:
         n.remove()
 
 
 def check_running(force_removal=False):
-    containers = client.containers.list(all=True, filters={"label": ["netem_node=True"]})
-    networks = client.networks.list(filters={"label": ["netem_network=True"]})
+    containers = client.containers.list(all=True, filters={"label": ["opennetem_node=True"]})
+    networks = client.networks.list(filters={"label": ["opennetem_network=True"]})
 
     if len(containers)>0 or len(networks)>0:
         if force_removal:
@@ -124,6 +124,15 @@ def check_running(force_removal=False):
             return
         
         print(f"It seems like there are existing containers and/or networks.")
+        print(f"Containers:")
+        for c in containers:
+            print(f"  {c.name}")
+        
+        print(f"Networks:")
+        for n in networks:
+            print(f"  {n.name}")
+
+            
         print("Remove them or Cancel?  (R/c)")
         res = str(input())
         if len(res)==0 or res[0]=="R" or res[0]=="r" or res[0]=="Y" or res[0]=="y":

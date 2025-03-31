@@ -12,7 +12,7 @@ client = docker.from_env()
 #
 # Stop and remove containers by label
 #
-# Container_label list should be of the form ["netem_node=True", ...
+# Container_label list should be of the form ["opennetem_node=True", ...
 #]
 def stop_remove_container_bylabel(container_label_list):
     containers = client.containers.list(all=True, filters={"label": container_label_list})
