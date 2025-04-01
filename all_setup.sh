@@ -10,6 +10,7 @@ source venv/bin/activate
 
 # Install opennetem
 pushd .
+cd opennetem
 pip3 install --editable .
 popd
 
