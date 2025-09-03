@@ -9,13 +9,18 @@ import concurrent.futures
 import pingparsing
 import opennetem.runtime as opennetem_runtime
 import ipaddress
+import argparse
 import datetime
 import time
 from itertools import groupby, chain
+import logging
 
 import influxdb_client, os, time
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS
+
+logger = logging.getLogger("on_bplist")
+logging.basicConfig(filename='/var/run/opennetem/on_bplist.log', encoding='utf-8', level=logging.DEBUG)
 
 
 #
@@ -59,6 +64,7 @@ class influxdb_writer(object):
                 ret = self.write_api.write(bucket="netem", org="netem", record=res)
                 all_ret += [ret]
             except Exception as e:
+                logger.warning(f"influxdb write error: {e}")
                 print(f"influxdb write error: {e}")
                 all_ret += [None]
 
@@ -103,12 +109,15 @@ def bplist(docker_client, rtinfo):
     results = []
     done_this_time = {}
 
+    logger.debug(f"executing bplist on all nodes: {rtinfo.list_nodes()}")
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         # want time in this format 2021-08-09T18:04:56.865943 for influxdb
         tmp_time = datetime.datetime.now(datetime.timezone.utc)
         #tmp_time = tmp_time - datetime.timedelta(hours=1)
         the_start_time = tmp_time.isoformat()
         for node_name in rtinfo.list_nodes():
+                logger.debug(f"running bplist on {node_name}")
                 container = docker_client.containers.get(node_name)
 
                 # """/bin/bash -c '{tmp["command"]}'"""
@@ -158,6 +167,7 @@ def bplist(docker_client, rtinfo):
                         toks4 = toks3[1].split(".")
                         to_node_number = int(toks4[0])
                         to_service_number = int(toks4[1])
+                        logger.debug(f"logging {from_eid, to_eid}: {tmp[from_eid][to_eid]} to measurement bplist.")
                         tmp2 = {"measurement": "bplist",
                                 "fields": {"value": tmp[from_eid][to_eid]},
                                 "tags": {"node": the_source,
@@ -172,6 +182,11 @@ def bplist(docker_client, rtinfo):
                              done_this_time[the_source] = []
                         if ((from_node_number, to_node_number)) not in done_this_time[the_source]:
                              done_this_time[the_source] += [(from_node_number, to_node_number)]
+            else:
+                logger.debug("Nothing to log.")
+        
+        else:
+            logger.debug(f"Future returned non-zero exit code {future.result().exit_code}")
 
     # Now for all n:(s,d) elements in all_ever that we did NOT do this time, enter zero
     # print("Now looking to zero out stuff")
@@ -242,7 +257,9 @@ def do_main():
                             "fields": {"value": node_num}}])
         except:
              pass
-        
+    
+    logger.debug("Node Numbers written to influxdb ion_node_numbers")
+
     futures = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=30) as executor:
         result_matrices = {}

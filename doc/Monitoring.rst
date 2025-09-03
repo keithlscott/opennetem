@@ -29,6 +29,9 @@ For example, the ``on_mon_rtt`` script that can be scripted to run on the emulat
 to influxDB for link rtts measured with ``ping``, allowing Grafana to graph the time-variant properties of the
 network down to the order of seconds.
 
+The influxdb **username/password** is: **netem_root/netem_root**
+
+
 Grafana_Visualization
 =====================
 Grafana is the graphing front-end to the Prometheus and influxDB databases.
