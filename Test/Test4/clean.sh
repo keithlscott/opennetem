@@ -14,3 +14,5 @@ find . -name "ion.log" | xargs rm -f
 find . -name "netem.log" | xargs rm -f
 find . -name "__pycache__" | xargs rm -rf
 
+find . -name "*.pcap" | xargs rm -f
+find . -name "*.out" | xargs rm -f

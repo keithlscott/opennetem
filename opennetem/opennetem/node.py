@@ -6,22 +6,23 @@
 #
 
 import shutil
+import json
 import docker
 import os
-import netem_logging
+import opennetem.my_logging as my_logging
 
-logger = netem_logging.get_sublogger("node")
 
-class netem_node(object):
+logger = my_logging.get_sublogger("node")
+
+class opennetem_node(object):
     # node_config is the node's entry from the node_configs
     # portion of the scenario config file
-    def __init__(self, scenario, node_name, node_config):
+    def __init__(self, scenario, node_name: str, node_config: dict) -> None:
         self.scenario = scenario
         self.client = docker.from_env()
         self.node_name = node_name
         self.node_config = node_config.copy()
         self.container = None
-        logger.info(f"Creating node from {node_config}")
         self.create_container()
         return
     
@@ -33,14 +34,18 @@ class netem_node(object):
 
 
     def create_container(self):
-        my_host_dir = f"{self.scenario.scenario_dir}/netem/{self.node_name}"
-        logger.info("Creating container {self.node_name} with:\n{self.node_config}")
+        my_host_dir = f"{self.scenario.scenario_dir}/mounts/{self.node_name}"
+        logger.info(f"Creating container {self.node_name} with:")
+        tmp_str = json.dumps(self.node_config, indent=2)
+        lines = tmp_str.split("\n")
+        for l in lines:
+            logger.info(f"{l}")
 
         try:
             os.makedirs(my_host_dir, mode = 0o777, exist_ok=True)
             mounts = [docker.types.Mount(f"/netem/netem_tools",  f"{self.scenario.install_dir}/netem_tools", type="bind", read_only=True),
-                      docker.types.Mount(f"/netem/globals", f"{self.scenario.scenario_dir}/netem/globals", type="bind", read_only=True),
-                      docker.types.Mount(f"/netem/node", my_host_dir, type="bind")]
+                      docker.types.Mount(f"/netem/mounts/global", f"{self.scenario.scenario_dir}/mounts/global", type="bind", read_only=True),
+                      docker.types.Mount(f"/netem/mounts/node", my_host_dir, type="bind")]
             
             # This adds mount points from both the node_config and global_config
             # sections of the 'node_configs' section of the scenario file.
@@ -50,12 +55,13 @@ class netem_node(object):
                 if "mounts" not in config_source or len(config_source["mounts"])==0:
                     logger.info(f"NO node-specific mounts for {self.node_name}.")
 
+                logger.debug(f"config_source[mounts] = {config_source['mounts']}")
                 if "mounts" in config_source:
                     for m in config_source["mounts"]:
                         src_dir = self.scenario.scenario_dir+"/"+m[0]
                         if not os.path.exists(src_dir):
                             os.makedirs(src_dir, exist_ok=True)
-                        logger.info(f"Adding node-specific mount point {src_dir} at {m[1]}")
+                        logger.debug(f"Adding scenario-defined mount point {src_dir} at {m[1]}")
                         mounts += [docker.types.Mount(m[1], src_dir, type="bind")]
                 if "working_dir" in config_source:
                     working_dir = config_source["working_dir"]
@@ -77,7 +83,7 @@ class netem_node(object):
                 privileged=True,
                 cap_add=["NET_ADMIN"],
                 hostname=self.node_name,
-                labels={"netem_node": "True"},
+                labels={"opennetem_node": "True"},
                 mounts=mounts,
                 working_dir=working_dir,
                 detach=True

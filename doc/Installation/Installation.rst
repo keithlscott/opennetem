@@ -4,12 +4,18 @@ Installation
 
 Install Basic apt Packages
 ==========================
-sudo apt -y update
-sudo apt -y install git
-sudo apt -y install make
-sudo apt -y install sphinx-doc
-sudo apt -y install sphinx-common
-sudo apt -y install python3.10-venv
+
+  - ``sudo apt -y update``
+  - ``sudo apt -y install git``
+  - ``sudo apt -y install make``
+  - ``sudo apt -y install sphinx-doc``
+  - ``sudo apt -y install sphinx-common``
+  - ``sudo apt -y install python3.10-venv``
+  - ``sudo apt -y install bridge-utils``
+
+NOTE: bridge-utils is deprecated; need to figure out what the new
+tool is and how to invoke it.
+
 
 Install docker
 ===============
@@ -25,8 +31,10 @@ Then add the GPG key for the official Docker repository to your system:
 
 ``sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc``
 
-Add the Docker repository to APT sources::
+Add the Docker repository to APT sources
 
+.. code-block:: bash
+  
   echo \
     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
     $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
@@ -57,54 +65,79 @@ Notice that docker-ce is not installed, but the candidate for installation is fr
 
 Finally, install Docker:
 
-`` sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin``
+``sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin``
 
-Clone netem repo
-================
-Git clone .... 
 
-Make python3 virtual environment
-=================================
-As a normal user (not root) in the netem directory:
-``python3 -m venv netem_venv``
-``pip3 install docker``
-``pip3 install pandas``
-``pip3 install statsd-telegraf``
-``pip3 install influxdb_client``
+Set up everything
+=================
+opennetem includes a script that gets everything set up.  You can
+just run the script or pick from it and execute by hand.
 
-You can also use ``pip3 install -r requirements.txt``
+.. code-block:: bash
 
-Activate the python virtual environment
-=======================================
-source netem_env/bin/activate
+  #!/usr/bin/bash
 
-Build netem Images
-==================
-In netem_images/netem1 directory: ./build.sh 
-In netem_images/netem_utilities directory: ./build.sh 
-In doc directory: make html 
 
-Set Up the Monitoring Infrastructure
-====================================
-The ``restore_volumes.sh`` script should only need to be run once
-per installation.  ``docker compose up -d`` will start the
-monitoring stack which can persist across multiple invocations
-of the emulator.  If you need to shut it down for some reason,
-use ``docker compose down`` and then you can re-up it.
+  # Install Python virtual environment
+  pip install virtualenv
+  virtualenv venv
+  source venv/bin/activate
+  #pip3 install -r requirements.txt
+  #deactivate
 
-In the netem/monitor directory:
-``./restore_volumes.sh``
-``docker compose up -d``
+  # Install opennetem
+  pushd .
+  pip3 install --editable .
+  popd
+
+  #
+  # Link from 'user' opennetem executables installed by pyproject
+  # to /usr/local/bin so that they're in root's path to make it
+  # easier to run the emulator as root.
+  #
+  echo "Linking opennetem executables to /usr/local/bin so that"
+  echo "they're in root's path (using sudo)."
+  EXECUTABLES="opennetem on_mon_rtt on_bplist on_bpstats"
+  for item in $EXECUTABLES; do
+    sudo ln -s ~/.local/bin/${item} /usr/local/bin/$item
+  done
+
+  # Make opennetem html documentation
+  cd doc
+  make html
+  cd ..
+
+  # Build the docker images used by opennetem
+  cd netem_images
+  ./build_images.sh
+  cd ..
+
+  # Restore the data volumes used by the monitoring stack
+  # This includes things like the database configuration
+  # and Grafana dashboard configurations
+  cd monitor
+  ./restore_volumes.sh
+  cd ..
+
+  # Start the monitoring stack
+  # This can be left running.  If you do stop it
+  # (with docker-compose down in the monitor directory)
+  # you'll need to restart it if you want monitoring
+  # capabilities.
+  cd monitor
+  docker-compose up -d
+  cd ..``
+
 
 Run Test1
 =========
 
 Become root in the Test/Test1 directory
-cd Test/Test1
-sudo -E bash
+  - ``cd Test/Test1``
+  - ``sudo -E bash``
 
 Start the emulation with the test1_scenario.json file
-../../netem_scenario.py ./test1_scenario.json
+  - ``opennetem ./test1_scenario.json``
 
 Point a browser at the host's port 3000 (Grafana)
 Username/Password is admin/admin

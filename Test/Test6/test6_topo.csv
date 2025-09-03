@@ -1,0 +1,115 @@
+﻿Time,   Source,     Dest,       delay,      rate,	Comments
+0,      node_a,     node_b,     0s,         1Mbit
+,       node_b,     node_a,     0s,         1Mbit
+,       node_b,     node_c,     0s,         1Mbit
+,       node_c,     node_b,     0s,         1Mbit
+,       node_b,     node_d,     0s,         1Mbit
+,       node_d,     node_b,     0s,         1Mbit
+,       node_c,     node_d,     0s,         1Mbit
+,       node_d,     node_c,     0s,         1Mbit
+,       node_d,     node_e,     0s,         1Mbit
+,       node_e,     node_d,     0s,         1Mbit
+60,     node_a,     node_b,     0s,         1Mbit,	Only b--c of the triangle connected
+,	node_b,     node_a,     0s,         1Mbit
+,	node_b,     node_c,     0s,         1Mbit
+,	node_c,     node_b,     0s,         1Mbit
+,	node_b,     node_d,
+,       node_d,     node_b,
+,       node_c,     node_d,
+,       node_d,     node_c,
+,       node_d,     node_e,     0s,         1Mbit
+,       node_e,     node_d,     0s,         1Mbit
+90, 	node_a,     node_b,     0s,         1Mbit, 	Only c--d of the triangle connected
+,	node_b,     node_a,     0s,         1Mbit
+,	node_b,     node_c,
+,	node_c,     node_b,
+,	node_b,     node_d,
+,       node_d,     node_b,
+,       node_c,     node_d,	0s,	    1Mbit
+,       node_d,     node_c,	0s,         1Mbit
+,       node_d,     node_e,     0s,         1Mbit
+,       node_e,     node_d,     0s,         1Mbit
+120,     node_a,     node_b,	0s,	    1Mbit,	Only b--d of the triangle connected
+,	node_b,     node_a,     0s,         1Mbit
+,       node_b,     node_c,
+,	node_c,     node_b,
+,	node_b,     node_d,	0s,	    1Mbit
+,       node_d,     node_b,	0s,	    1Mbit
+,       node_c,     node_d,
+,       node_d,     node_c,
+,       node_d,     node_e,     0s,         1Mbit
+,       node_e,     node_d,     0s,         1Mbit
+150,    node_a,     node_b,     0s,         1Mbit,	Only b--c of the triangle connected
+,	node_b,     node_a,     0s,         1Mbit
+,       node_b,     node_c,     0s,         1Mbit
+,	node_c,     node_b,     0s,         1Mbit
+,	node_b,     node_d,
+,       node_d,     node_b,
+,       node_c,     node_d,
+,       node_d,     node_c,
+,       node_d,     node_e,     0s,         1Mbit
+,       node_e,     node_d,     0s,         1Mbit
+180,    node_a,     node_b,	0s,	    1Mbit,	Only c--d of the triangle connected
+,	node_b,     node_a,     0s,         1Mbit
+,       node_b,     node_c,
+,	node_c,     node_b,
+,	node_b,     node_d,
+,       node_d,     node_b,
+,       node_c,     node_d,	0s,	    1Mbit
+,       node_d,     node_c,	0s,         1Mbit
+,       node_d,     node_e,     0s,         1Mbit
+,       node_e,     node_d,     0s,         1Mbit
+210,    node_a,     node_b,	0s,	    1Mbit,	Only b--d of the triangle connected
+,	node_b,     node_a,     0s,         1Mbit
+,       node_b,     node_c,
+,	node_c,     node_b,
+,	node_b,     node_d,	0s,	    1Mbit
+,       node_d,     node_b,	0s,	    1Mbit
+,       node_c,     node_d,
+,       node_d,     node_c,
+,       node_d,     node_e,     0s,         1Mbit
+,       node_e,     node_d,     0s,         1Mbit
+240,    node_a,     node_b,     0s,         1Mbit,	Only b--c of the triangle connected
+,	node_b,     node_a,     0s,         1Mbit
+,       node_b,     node_c,     0s,         1Mbit,
+,	node_c,     node_b,     0s,         1Mbit
+,	node_b,     node_d,
+,       node_d,     node_b,
+,       node_c,     node_d,
+,       node_d,     node_c,
+,       node_d,     node_e,     0s,         1Mbit
+,       node_e,     node_d,     0s,         1Mbit
+270,    node_a,     node_b,	,	       ,	Only c--d of the triangle connected
+,	node_b,     node_a,     0s,         1Mbit
+,       node_b,     node_c,
+,	node_c,     node_b,
+,	node_b,     node_d,
+,       node_d,     node_b,
+,       node_c,     node_d,	0s,	    1Mbit
+,       node_d,     node_c,	0s,         1Mbit
+,       node_d,     node_e,     0s,         1Mbit
+,       node_e,     node_d,     0s,         1Mbit
+300,    node_a,     node_b,	,	       ,	Only b--d of the triangle connected
+,	node_b,     node_a,     0s,         1Mbit
+,       node_b,     node_c,
+,	node_c,     node_b,
+,	node_b,     node_d,	0s,	    1Mbit
+,       node_d,     node_b,	0s,	    1Mbit
+,       node_c,     node_d,
+,       node_d,     node_c,
+,       node_d,     node_e,     0s,         1Mbit
+,       node_e,     node_d,     0s,         1Mbit
+330,    node_a,     node_b,     0s,         1Mbit,	All connected
+,       node_b,     node_a,     0s,         1Mbit
+,       node_b,     node_c,     0s,         1Mbit
+,       node_c,     node_b,     0s,         1Mbit
+,       node_b,     node_d,     0s,         1Mbit
+,       node_d,     node_b,     0s,         1Mbit
+,       node_c,     node_d,     0s,         1Mbit
+,       node_d,     node_c,     0s,         1Mbit
+,       node_d,     node_e,     0s,         1Mbit
+,       node_e,     node_d,     0s,         1Mbit
+360,	node_a,	    node_b,     0s,         1Mbit,	End
+
+ 
+

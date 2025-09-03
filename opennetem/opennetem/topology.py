@@ -22,13 +22,13 @@ import argparse
 import subprocess
 import ipaddress
 
-import netem_scenario
+import opennetem.scenario
 
 import logging
-import netem_logging
+import opennetem.my_logging as my_logging
 
-logger = netem_logging.get_sublogger("topology")
-
+# logger = my_logging.get_sublogger("topology")
+logger = logging.getLogger("opennetem.topology")
 
 class netem_link(object):
     def __init__(self, source, dest, owlt_s, bandwidth_bps):
@@ -66,73 +66,93 @@ class time_variant_topology(object):
         network = self.scenario.client.networks.create(
             net_name,
             driver="bridge",
-            labels={"netem_network": "True"},
+            labels={"opennetem_network": "True"},
             ipam=ipam_config
         )
         return(network)
     
 
-    def read_topofile(self):
-        filename = self.scenario.scenario_dict["topology_filename"]
+    def read_topofile(self, filename=None, sheetname=None):
+        if filename==None and self.scenario!=None:
+            logger.info("Getting topology file from scenario {self.scenario.filename}.")
+            filename = self.scenario.scenario_dict["topology_filename"]
+            if "topology_sheetname" in self.scenario.scenario_dict:
+                sheetname = self.scenario.scenario_dict["topology_sheetname"]
+        elif filename!=None:
+            pass
+        else:
+            logger.critical("No filename or scenario to identify topofile.")
+
         if filename.find(".xlsx")>=0:
-            sheetname = self.scenario.scenario_dict["topology_sheetname"]
             self.df = pandas.read_excel(filename, sheetname)
         elif filename.find(".json")>=0:
-            self.df = self.read_topofile_json()
+            self.df = self.read_topofile_json(filename)
         elif filename.find(".csv")>=0:
             self.df = pandas.read_csv(filename)
 
-            # Strip whitespace from column names
-            self.df.columns = self.df.columns.str.strip()
+        # Strip whitespace from column names
+        self.df.columns = self.df.columns.str.strip()
+    
+        # Strip whitespace from values
+        # self.df = self.df.applymap(lambda x: x.strip().rstrip() if isinstance(x, str) else x)
+        self.df = self.df.map(lambda x: x.strip().rstrip() if isinstance(x, str) else x)
 
-            # Strip whitespace from values
-            self.df = self.df.applymap(lambda x: x.strip().rstrip() if isinstance(x, str) else x)
+        # Replace all empty elements with NaN
+        self.df.replace('', numpy.nan, inplace=True)
 
-            # Replace all empty elements with NaN
-            self.df.replace('', numpy.nan, inplace=True)
-        else:
-            logging.fatal(f"Don't recognize topology filename {filename}")
-            sys.exit(0)
-        
+        # Drop any column that seems to be a comment
+        for to_drop in ["comments", "comment", "Comments", "Comment"]:
+            if to_drop in self.df:
+                self.df.drop(columns=to_drop, inplace=True)
+
         # Convert all column names to lower case
         self.df.columns = self.df.columns.str.lower()
-        logger.info(f"After converting to lower self.df is:\n{self.df}")
+
+        logger.debug(f"After converting to lower self.df is:")
 
         self.fill_topo_df()
     
+        tmp = str(self.df)
+        tmp_lines = tmp.split("\n")
+        for l in tmp_lines:
+            logger.debug(l)
+
 
     # Fill in elided topology columns elements as needed
+    # df["col"][row_indexer] = value
+    #
+    # Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
     def fill_topo_df(self):
         cur_time = None
 
         for index, row in self.df.iterrows():
             try:
                 if pandas.isnull(row["time"]):
-                    self.df["time"][index] = cur_time
+                    #self.df["time"][index] = cur_time
+                    self.df.loc[index, "time"] = cur_time
                 else:
                     cur_time = row["time"]
                     cur_source = None
                     cur_dest = None
 
                 if pandas.isnull(row["source"]):
-                    self.df["source"][index] = cur_source
+                   # self.df["source"][index] = cur_source
+                   self.df.loc[index, "source"] = cur_source
                 else:
                     cur_source = row["source"]
 
                 if pandas.isnull(row["dest"]):
-                    self.df["dest"][index] = cur_dest
+                    # self.df["dest"][index] = cur_dest
+                    self.df.loc[index, "dest"] = cur_dest
                 else:
                     cur_dest = row["dest"]
             except Exception as e:
                 logger.fatal(f"Can't fill_topo_df for row {row}")
                 sys.exit(0)
                 
-        logger.debug(f"\n{self.df}")
 
-
-    def read_topofile_json(self):
-        filename = self.scenario.scenario_dict["topology_filename"]
-
+    def read_topofile_json(self, filename):
         with open(filename, "r") as fp:
             data = fp.read()
             info = json.loads(data)
@@ -397,20 +417,18 @@ class time_variant_topology(object):
         #
         #
         #
-        with open(f"{self.scenario.scenario_dir}/netem/globals/scenario_info.json", "w") as fp:
+        with open(f"{self.scenario.scenario_dir}/mounts/global/scenario_info.json", "w") as fp:
             fp.write(json.dumps(self.scenario.host_network_info, indent=2))
         
         # Augment the container dynamic info with docker network names
         logger.info("Augmenting container network info with docker network names.")
         for c in self.scenario.container_info:
             the_c = self.scenario.container_info[c]
-            # print(f"the_c is {the_c}")
             for intf in the_c:
-                print(f"looking for the_c ifindex {intf['ifindex']}")
                 for d in self.scenario.host_network_info:
                     # print(f"d is {d}")
                     # print(f"############################## the_c {intf['ifindex']}  d {d['link_index']}")
-                    if intf["ifindex"]==d["link_index"]:
+                    if (intf["ifindex"]==d["link_index"]) and (c==d['container_name']):
                         intf["network_name"] = d["network_name"]
 
 

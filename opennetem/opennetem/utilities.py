@@ -13,15 +13,16 @@ import docker
 import multiprocessing
 import time
 import logging
-import netem_logging
-import clean_containers
+import opennetem.my_logging as my_logging
+import opennetem.clean_containers as clean_containers
 import socket
+import tarfile
 
 import influxdb_client, os, time
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
-logger = netem_logging.get_sublogger("utilities")
+logger = my_logging.get_sublogger("utilities")
 
 client = docker.from_env()
 
@@ -36,6 +37,7 @@ class influxdb_support(object):
         self.client = influxdb_client.InfluxDBClient(url=self.url, token=self.token, org=self.org)
 
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
+        self.delete_api = self.client.delete_api()
             
     def write_value(self, measurement_name, measurement_val, tags_dict = {}, other_fields_dict = {}):
         try:
@@ -46,20 +48,28 @@ class influxdb_support(object):
                 "tags": tags_dict,
                 "fields": fields_dict,
             }
-            logger.info(f"Logging dict to influxdb: {dictionary}")
+            # logger.debug(f"Logging dict to influxdb: {dictionary}")
             ret = self.write_api.write(bucket="netem", org="netem", record=dictionary)
         except Exception as e:
             logger.warning(f"Error writing to influxdb: {e}")
 
-    def write_point(self, point):
-         logger.info(f"Logging point to influxdb: {point}")
-         self.write_api.write(bucket="netem", org="netem", record=point)
+
+    # delete_api.delete('1970-01-01T00:00:00Z', '2050-04-27T00:00:00Z', '_measurement="network_names"', bucket="netem", org="netem")
+    def delete(self, fromtime, totime, measurement_name, bucket, org):
+        the_thing = f'_measurement="{measurement_name}"'
+        logger.debug(f"Delete api {fromtime} {totime} {the_thing} {bucket} {org}")
+        try:
+            self.delete_api.delete(fromtime, totime, the_thing, bucket, org)
+        except Exception as e:
+            logger.warning(f"Error deleting from influxdb: {e}")
 
 
 def apply_to_all_containers(func):
+    """Apply func to all docker containers with the label 'opennetem_node'=True"""
+
     logger.info(f"In apply_to_all_containers {func.__name__}")
     # containers = client.containers.list(all=True, filters={"name": "netem*"})
-    containers = client.containers.list(all=True, filters={"label": ["netem_node=True"]})
+    containers = client.containers.list(all=True, filters={"label": ["opennetem_node=True"]})
 
     with multiprocessing.Pool(processes=3) as pool:
         container_names = [x.name for x in containers]
@@ -98,18 +108,31 @@ def run_command_in_all_containers(command):
 
 def remove_all_networks():
     # networks = client.networks.list(names="netem*")
-    networks = client.networks.list(filters={"label": ["netem_network=True"]})
-    print([x.name for x in networks])
+    networks = client.networks.list(filters={"label": ["opennetem_network=True"]})
+    logger.info(f"Removing networks: {[x.name for x in networks]}")
     for n in networks:
         n.remove()
 
 
-def check_running():
-    containers = client.containers.list(all=True, filters={"label": ["netem_node=True"]})
-    networks = client.networks.list(filters={"label": ["netem_network=True"]})
+def check_running(force_removal=False):
+    containers = client.containers.list(all=True, filters={"label": ["opennetem_node=True"]})
+    networks = client.networks.list(filters={"label": ["opennetem_network=True"]})
 
     if len(containers)>0 or len(networks)>0:
+        if force_removal:
+            clean_containers.cleanup_all()
+            return
+        
         print(f"It seems like there are existing containers and/or networks.")
+        print(f"Containers:")
+        for c in containers:
+            print(f"  {c.name}")
+        
+        print(f"Networks:")
+        for n in networks:
+            print(f"  {n.name}")
+
+            
         print("Remove them or Cancel?  (R/c)")
         res = str(input())
         if len(res)==0 or res[0]=="R" or res[0]=="r" or res[0]=="Y" or res[0]=="y":
@@ -247,3 +270,17 @@ def get_ip_addr(scenario, node, network, verbose=False):
     
 
     
+def copy_to(src, dst):
+    name, dst = dst.split(':')
+    container = client.containers.get(name)
+
+    os.chdir(os.path.dirname(src))
+    srcname = os.path.basename(src)
+    tar = tarfile.open(src + '.tar', mode='w')
+    try:
+        tar.add(srcname)
+    finally:
+        tar.close()
+
+    data = open(src + '.tar', 'rb').read()
+    container.put_archive(os.path.dirname(dst), data)
