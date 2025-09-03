@@ -26,6 +26,14 @@ package imposes the tc netem qdiscs at the host level rather than applying them 
 the interfaces inside the containers.  This also reduces the in-container complexity
 (though not necessarily the overall load on the system).
 
+
+To install the right version of docker and docker-compose, follow the instructions
+here (https://docs.docker.com/engine/install/ubuntu/) to add the docker repository
+and then use *apt install docker-ce* and *apt install docker-compose-plugin*
+
+Why: because different docker-compose versions will name containers differently
+and we need them to have known names.
+
 To build a python virtual environment in which to run opennetem, start with:
 
   pip install virualenv (if you don't already have virtualenv installed)
