@@ -1,0 +1,3 @@
+# CONFIGFLAGS
+# [1] ion configuration flags : 13 [SDR_IN_DRAM + SDR_REVERSIBLE + SDR_BOUNDED]
+configFlags 13

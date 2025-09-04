@@ -15,5 +15,3 @@ netem.log
 mounts/global/ION_contacts
 **/ion_config_tool.log
 
-mounts/node_*/ION_CONFIGS
-
