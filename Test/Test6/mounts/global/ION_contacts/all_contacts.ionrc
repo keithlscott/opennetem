@@ -1,0 +1,95 @@
+#
+# Each node's local loopback
+#
+#
+a contact +0 +1000000 1 1 1000000
+a range +0 +1000000 1 1 1
+a contact +0 +1000000 2 2 1000000
+a range +0 +1000000 2 2 1
+a contact +0 +1000000 3 3 1000000
+a range +0 +1000000 3 3 1
+a contact +0 +1000000 4 4 1000000
+a range +0 +1000000 4 4 1
+a contact +0 +1000000 5 5 1000000
+a range +0 +1000000 5 5 1
+
+#
+# Nodes 1 and 2
+# node_a and node_b
+#
+a contact +0 +1000000 1 2 1000000
+a range +0 +1000000 1 2 1
+a contact +0 +1000000 2 1 1000000
+a range +0 +1000000 2 1 1
+
+#
+# Nodes 4 and 5
+# node_d and node_e
+#
+a contact +0 +1000000 4 5 1000000
+a range +0 +1000000 4 5 1
+a contact +0 +1000000 5 4 1000000
+a range +0 +1000000 5 4 1
+
+#
+# Set the (fixed) ranges for the nodes in the middle triangle
+#
+a range +0 +1000000 2 3 1
+a range +0 +1000000 3 2 1
+
+a range +0 +1000000 2 4 1
+a range +0 +1000000 4 2 1
+
+a range +0 +1000000 3 4 1
+a range +0 +1000000 4 3 1
+
+#
+# Triangle fully connected until 60s
+a contact  +0 +60 2 3 1000000
+a contact  +0 +60 3 2 1000000
+
+a contact  +0 +60 3 4 1000000
+a contact  +0 +60 4 3 1000000
+
+a contact  +0 +60 2 4 1000000
+a contact  +0 +60 4 2 1000000
+
+# Cycle starts here
+a contact +60 +90 2 3 1000000
+a contact +60 +90 3 2 1000000
+
+a contact +90 +120 3 4 1000000
+a contact +90 +120 4 3 1000000
+
+a contact +120 +150 2 4 1000000
+a contact +120 +150 4 2 1000000
+
+# Repeat
+a contact +150 +180 2 3 1000000
+a contact +150 +180 3 2 1000000
+
+a contact +180 +210 3 4 1000000
+a contact +180 +210 4 3 1000000
+
+a contact +210 +240 2 4 1000000
+a contact +210 +240 4 2 1000000
+
+# Repeat
+#
+a contact +240 +270 2 3 1000000
+a contact +240 +270 3 2 1000000
+
+a contact +270 +300 3 4 1000000
+a contact +270 +300 4 3 1000000
+
+a contact +300 +330 2 4 1000000
+a contact +300 +330 4 2 1000000
+
+# All connected again
+a contact +330 +10000 2 3 10000000
+a contact +330 +10000 3 2 10000000
+a contact +330 +10000 3 4 10000000
+a contact +330 +10000 4 3 10000000
+a contact +330 +10000 2 4 10000000
+a contact +330 +10000 4 2 10000000
+
