@@ -42,11 +42,8 @@ apt -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker
 #
 apt -y install python3-virtualenv
 
-pushd .
-cd opennetem/opennetem
 virtualenv venv
 source venv/bin/activate
-popd
 
 
 ################################################
@@ -57,7 +54,7 @@ popd
 # find when we run the emulator as root.
 #
 pushd .
-cd opennetem/opennetem
+cd opennetem/
 pip3 install --editable .
 popd
 
@@ -81,7 +78,7 @@ done
 # Make opennetem html documentation
 #
 pushd .
-pip3 install sphinx-build
+pip3 install Sphinx
 cd doc
 make html
 popd
@@ -121,4 +118,11 @@ pushd .
 cd monitor
 docker compose up -d
 popd
+
+
+################################################
+#
+# Make everything here owned by the user:group (not root)
+#
+chown -R $(echo $SUDO_USER):$(id -gn $SUDO_USER) ${1} -h .
 
