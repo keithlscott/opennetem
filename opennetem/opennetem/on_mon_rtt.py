@@ -183,7 +183,7 @@ def do_main():
 
             if last_futures_len != len(futures):
                 last_futures_len = len(futures)
-                # print("resetting timeouts 1")
+                print("on_mon_rtt: resetting timeouts from {timeouts} to 0 location 1")
                 timeouts = 0
 
             to_remove = []
@@ -197,7 +197,12 @@ def do_main():
                 for future in concurrent.futures.as_completed(futures, timeout=1):
                     # print(f"A future became available from {len(futures)} futures; future has {len(future.result())} results.")
                     # print(future.results())
-                    # print("resetting timeouts 2")
+
+                    # This will re-raise any exceptions from the call
+                    future.result()
+
+                    # print(f"on_mon_rtt: resetting timeouts from {timeouts} to 0 location 2")
+                    # print(future)
                     timeouts = 0
                     # print(f"+++++ {json.dumps(future.result(), indent=2)}")
 
@@ -221,12 +226,12 @@ def do_main():
                 to_remove = []
 
             except concurrent.futures._base.TimeoutError as e:
-                print(f"Futures timeout: {e}")
                 timeouts += 1
+                print(f"on_mon_rtt: Futures timeout: {e}; timeouts={timeouts}")
                 next_time = time.time() + measurement_interval
 
             except docker.errors.NotFound or docker.errors.APIError as e:
-                print(f"Docker container not found: {e.args}")
+                print(f"on_mon_rtt: Docker container not found: {e.args}; timeouts={timeouts}")
                 time.sleep(5)
                 client = docker.from_env()
                 rtinfo = opennetem_runtime.opennetem_runtime()
@@ -235,7 +240,7 @@ def do_main():
                 next_time = time.time() +measurement_interval
 
             except Exception as e:
-                print(f"Unhandled exception {e} of type {type(e)}")
+                print(f"on_mon_rtt: Unhandled exception {e} of type {type(e)}")
                 sys.exit(-1)
 
             sleep_diff = next_time-time.time()

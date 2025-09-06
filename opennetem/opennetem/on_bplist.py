@@ -236,29 +236,29 @@ def do_main():
 
     all_ever = {} # {node_name: [{"from": node_num, "to": node_num}, {}, ...]}
 
-    foo.delete('1970-01-01T00:00:00Z', '2050-04-27T00:00:00Z',
-                                    measurement="ion_node_numbers", bucket="netem", org="netem")
+    # foo.delete('1970-01-01T00:00:00Z', '2050-04-27T00:00:00Z',
+    #                                 measurement="ion_node_numbers", bucket="netem", org="netem")
     
-    #
-    # Find ION node numbers and jam them into the database.
-    #
-    for node in rtinfo.list_nodes():
-        try:
-            container = client.containers.get(node)
-            cmd = """/bin/bash -c 'echo "l endpoint" | bpadmin | head -1'"""
-            ret = container.exec_run(cmd=cmd)
-            # ": ipn:x.y PID"
-            tmp=ret.output.decode("utf-8").split(" ")[1]
-            tmp2 = tmp.split(":")[1]
-            node_num = int(tmp2.split(".")[0])
-            # print(f"node_num: {node_num}")
+    # #
+    # # Find ION node numbers and jam them into the database.
+    # #
+    # for node in rtinfo.list_nodes():
+    #     try:
+    #         container = client.containers.get(node)
+    #         cmd = """/bin/bash -c 'echo "l endpoint" | bpadmin | head -1'"""
+    #         ret = container.exec_run(cmd=cmd)
+    #         # ": ipn:x.y PID"
+    #         tmp=ret.output.decode("utf-8").split(" ")[1]
+    #         tmp2 = tmp.split(":")[1]
+    #         node_num = int(tmp2.split(".")[0])
+    #         # print(f"node_num: {node_num}")
 
-            foo.write_value([{"measurement": "ion_node_numbers",
-                            "fields": {"value": node_num}}])
-        except:
-             pass
+    #         foo.write_value([{"measurement": "ion_node_numbers",
+    #                         "fields": {"value": node_num}}])
+    #     except:
+    #          pass
     
-    logger.debug("Node Numbers written to influxdb ion_node_numbers")
+    # logger.debug("Node Numbers written to influxdb ion_node_numbers")
 
     futures = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=30) as executor:
@@ -292,6 +292,7 @@ def do_main():
 
             if last_futures_len != len(futures):
                 last_futures_len = len(futures)
+                print("resetting timeouts location 1")
                 timeouts = 0
 
             to_remove = []
@@ -305,7 +306,11 @@ def do_main():
                 for future in concurrent.futures.as_completed(futures, timeout=1):
                     # print(f"A future became available from {len(futures)} futures; future has {len(future.result())} results.")
                     # print(future.result())
-                    # print("resetting timeouts 2")
+                    
+                    # Re-raise any issues from the called function
+                    future.result()
+
+                    print("resetting timeouts location 2")
                     timeouts = 0
 
                     all_ret = foo.write_value(future.result())
@@ -328,6 +333,7 @@ def do_main():
                 rtinfo = opennetem_runtime.opennetem_runtime()
                 futures = []
                 timeouts += 1
+                print(f"timeouts is now {timeouts}")
                 next_time = time.time() + measurement_interval
 
             except Exception as e:
