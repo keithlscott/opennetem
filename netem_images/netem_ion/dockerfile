@@ -42,7 +42,7 @@ RUN apt -y update
 RUN apt -y install iproute2 iputils-ping tcpdump collectd vim psmisc jq
 RUN apt -y install python3
 RUN apt -y install python3-pip
-RUN pip install statsd-tags influxdb_client
+RUN pip install --break-system-packages statsd-tags influxdb_client
 
 #
 # Set up so that /usr/local/lib is in LD_LIBRARY_PATH

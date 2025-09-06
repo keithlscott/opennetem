@@ -58,9 +58,12 @@ services:
   
   
   grafana:
-    image: grafana/grafana-enterprise
+    image: grafana/grafana-enterprise:12.1
     ports:
       - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
       - "monitor_grafana-data:/var/lib/grafana"
     labels:
@@ -68,7 +71,7 @@ services:
 
 
   influxdb:
-    image: influxdb:latest
+    image: influxdb:2.7.12
     volumes:
       - "./influxdb2:/etc/influxdb2"
       - "monitor_influxdb-data:/var/lib/influxdb2"

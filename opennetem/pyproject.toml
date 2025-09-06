@@ -37,4 +37,6 @@ opennetem = "opennetem.scenario:opennetem"
 on_mon_rtt = "opennetem.on_mon_rtt:do_main"
 on_bpstats = "opennetem.on_bpstats:do_main"
 on_bplist =  "opennetem.on_bplist:do_main"
+on_setup_ion_dbinfo = "opennetem.on_setup_ion_dbinfo:do_main"
+
 

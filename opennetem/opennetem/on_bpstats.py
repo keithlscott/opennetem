@@ -166,6 +166,10 @@ def do_main():
                     # print(f"A future became available from {len(futures)} futures; future has {len(future.result())} results.")
                     # print(future.results())
                     # print("resetting timeouts 2")
+
+                    # Re-raise any exceptions
+                    future.result()
+                    
                     timeouts = 0
                     # print(f"+++++ {json.dumps(future.result(), indent=2)}")
 

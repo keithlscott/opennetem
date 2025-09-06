@@ -13,7 +13,7 @@ RUN apt -y update
 RUN apt -y install iproute2 iputils-ping tcpdump collectd vim psmisc jq
 RUN apt -y install python3
 RUN apt -y install python3-pip
-RUN pip install statsd-tags influxdb_client
+RUN pip install --break-system-packages statsd-tags influxdb_client
 
 #
 # Copy files from etc to the container without replacing the

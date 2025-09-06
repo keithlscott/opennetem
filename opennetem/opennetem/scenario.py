@@ -597,7 +597,7 @@ class netem_scenario(object):
             for t in self.threads:
                 ret["active_threads"] += t.__name__
 
-
+    
     # The netem_scenario class isn't really a *thread*, but we do have this run
     # method
     def run(self) -> None:
@@ -655,6 +655,12 @@ class netem_scenario(object):
             self.logger.warning(f"{e}")
             time.sleep(5)
             pass
+
+        # Write information useful for monitoring / logging into the influxdb database.
+        # NOTE that we purge all old information first.  That means that if you run two emulations
+        # with different configurations, it will be difficult in e.g. Grafana to switch back and
+        # forth between them (because they'll have inconsistent ideas of the networks and nodes
+        # involved)
 
         # Write the network names into the influxdb database so we can use them in dashboards
         self.influxdb_support.delete('1970-01-01T00:00:00Z', '2050-04-27T00:00:00Z',
