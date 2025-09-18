@@ -9,3 +9,4 @@ That will install opennetem in the venv, and make links to the opennetem
     on_mon_rtt		Opennetem rtt monitoring script (runs on host)
     on_bpstats		Opennetem tool to monitor ION bpstats (runs on host)
     on_bplist		Opennetem tool to monitor ION queued bundles (runs on host)
+    on_setup_ion_dbinfo Program that adds ion info (node numbers) to the influxdb

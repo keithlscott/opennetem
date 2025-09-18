@@ -6,7 +6,7 @@ apt -y update
 #
 # Install python3
 #
-apt -y install python3 python3-pip
+apt -y install python3 python3-pip bridge-utils
 
 
 ################################################
