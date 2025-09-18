@@ -9,7 +9,7 @@ netem.log
 **/bping_3.1.out
 **/ion.log
 **/ltpblock*
-**/start_ion.out
+**/start_ion.log
 **/start_ion2.log
 **/bpecho.out
 **/ion_config_tool.log
