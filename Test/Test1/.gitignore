@@ -3,3 +3,4 @@ mounts/node_b
 mounts/node_c
 netem.log
 
+topology_images/*

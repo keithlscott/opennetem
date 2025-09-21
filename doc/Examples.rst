@@ -10,4 +10,5 @@ Examples
    Test1/Test1.rst
    Test2/Test2.rst
    Test3/Test3.rst
+   Test4/Test4.rst
 

@@ -40,7 +40,7 @@
         }
     },
     "commands": [
-        {"time": -5, "nodes": ["node_a"], "command": "export foo=`cat /netem/mounts/global/instance_info.json | jq '.start_time'`; ping -4 -c 60 10.44.3.2 | while read pong; do reltime=$(expr `date +'%s'` - $foo); echo `date +'%Y-%m-%d_%H:%M:%S,%N'` $reltime $pong; done > /netem/mounts/node_a/a_to_b_ping.txt"},
+        {"time": -5, "nodes": ["node_a"], "command": "export foo=`cat /netem/mounts/global/instance_info.json | jq '.start_time'`; ping -4 -c 60 10.44.3.2 | while read pong; do reltime=$(expr `date +'%s'` - $foo); echo `date +'%Y-%m-%d_%H:%M:%S,%N'` $reltime $pong; done > /netem/mounts/node/a_to_b_ping.txt"},
         {"time": -5, "nodes": ["node_b"], "command": "echo `date +'%s.%N'` > /netem/mounts/node/b_at_minus_5"},
         {"time": -4, "nodes": ["HOST"],   "command": "ls -l > host_command_1.txt"},
         {"time": -3, "nodes": ["node_a"], "command": "/netem/netem_tools/ping_monitor.py --use-ipv4 --target 10.44.3.2 --count=10000 --influxdb --verbose &> /netem/mounts/node/ping_monitor.out"},
