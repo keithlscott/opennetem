@@ -282,7 +282,7 @@ def main():
     logger.info("Starting")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config_dir", "-c", default="/netem/globals/")
+    parser.add_argument("--config_dir", "-c", default="/netem/mounts/global/")
     parser.add_argument("--write-configs", "-w", nargs="+", default=[], action="append")  # node names
     parser.add_argument("--base_dir", "-b", default=None)  # Base directory for ION config files
     args = parser.parse_args()
@@ -291,6 +291,8 @@ def main():
 
     if args.write_configs == []:
         logger.warning("Not writing any configs")
+
+    logger.info(f"Config dir is {args.config_dir}")
 
     try:
         with open(f"{args.config_dir}/scenario.json", "r") as fp:

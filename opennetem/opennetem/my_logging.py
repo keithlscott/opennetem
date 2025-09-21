@@ -30,6 +30,8 @@ def get_sublogger(name, parent=None):
 # the_dir should be the scenario dir if known.
 #
 def do_logging_config(the_dir):
+    logging_file_used = None
+
     print(f"do_logging_config called with dir: {the_dir}")
 
     for test_dir in [f"{the_dir}",
@@ -41,8 +43,9 @@ def do_logging_config(the_dir):
         if os.path.exists(f"{test_dir}/logging.conf"):
             logging.info(f"Using logging.conf: {test_dir}/logging.conf")
             logging.config.fileConfig(f"{test_dir}/logging.conf")
+            logging_file_used = test_dir
             break
 
     logger = logging.getLogger("opennetem")
-    logger.info("Done configuring logging.")
+    logger.info(f"Done configuring logging from {logging_file_used}.")
 
