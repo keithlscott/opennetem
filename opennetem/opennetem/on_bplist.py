@@ -15,9 +15,11 @@ import time
 from itertools import groupby, chain
 import logging
 
-import influxdb_client, os, time
-from influxdb_client import InfluxDBClient
-from influxdb_client.client.write_api import SYNCHRONOUS
+import opennetem.utilities as utilities
+
+# import influxdb_client, os, time
+# from influxdb_client import InfluxDBClient
+# from influxdb_client.client.write_api import SYNCHRONOUS
 
 logger = logging.getLogger("on_bplist")
 logging.basicConfig(filename='/var/run/opennetem/on_bplist.log', encoding='utf-8', level=logging.DEBUG)
@@ -36,48 +38,48 @@ def get_sections(bplist_output):
                         yield chain([next(v)], (next(grps)[1]))  # all lines up to next #TYPE
 
 
-class influxdb_writer(object):
-    def __init__(self):
-        # token = os.environ.get("INFLUXDB_TOKEN")
-        self.token = "9Q3OsSe5OFZBb0EWUVzcmERy80ZPI8yHORRs14dXGQmoZ0ySOGcShf3vlbZWlAebN3X_2vvO3wy_lQmWL7M71A=="
-        self.org = "netem"
-        # self.url = "http://monitor-influxdb-1:8086"
-        self.url = "http://localhost:8086"
+# class influxdb_writer(object):
+#     def __init__(self):
+#         # token = os.environ.get("INFLUXDB_TOKEN")
+#         self.token = "9Q3OsSe5OFZBb0EWUVzcmERy80ZPI8yHORRs14dXGQmoZ0ySOGcShf3vlbZWlAebN3X_2vvO3wy_lQmWL7M71A=="
+#         self.org = "netem"
+#         # self.url = "http://monitor-influxdb-1:8086"
+#         self.url = "http://localhost:8086"
 
-        self.client = influxdb_client.InfluxDBClient(url=self.url,
-                                                        token=self.token,
-                                                        org=self.org,
-                                                        database="netem") 
+#         self.client = influxdb_client.InfluxDBClient(url=self.url,
+#                                                         token=self.token,
+#                                                         org=self.org,
+#                                                         database="netem") 
            
-        self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
-        self.delete_api = self.client.delete_api()
+#         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
+#         self.delete_api = self.client.delete_api()
 
-    def write_value(self, list_of_dicts):
-        all_ret = []
+#     def write_value(self, list_of_dicts):
+#         all_ret = []
 
-        # print(f"Writing result value: {list_of_dicts}")
-        for res in list_of_dicts:
-            # print(f"One write dictionary is: {dictionary}")
-            try:
-                # ret = self.client.write(bucket="netem", org="netem", record=dictionary)
-                # print(f"writing record {json.dumps(res, indent=2)}")
-                ret = self.write_api.write(bucket="netem", org="netem", record=res)
-                all_ret += [ret]
-            except Exception as e:
-                logger.warning(f"influxdb write error: {e}")
-                print(f"influxdb write error: {e}")
-                all_ret += [None]
+#         # print(f"Writing result value: {list_of_dicts}")
+#         for res in list_of_dicts:
+#             # print(f"One write dictionary is: {dictionary}")
+#             try:
+#                 # ret = self.client.write(bucket="netem", org="netem", record=dictionary)
+#                 # print(f"writing record {json.dumps(res, indent=2)}")
+#                 ret = self.write_api.write(bucket="netem", org="netem", record=res)
+#                 all_ret += [ret]
+#             except Exception as e:
+#                 logger.warning(f"influxdb write error: {e}")
+#                 print(f"influxdb write error: {e}")
+#                 all_ret += [None]
 
-        return (all_ret)
+#         return (all_ret)
     
 
-    def delete(self, fromtime, totime, measurement, bucket, org):
-        # print(f"delete called with measurement_name={measurement}")
-        the_thing = f'_measurement="{measurement}"'
-        try:
-            self.delete_api.delete(fromtime, totime, the_thing, bucket, org)
-        except Exception as e:
-            print("FIXME in on_bplist influxdb support")
+#     def delete(self, fromtime, totime, measurement, bucket, org):
+#         # print(f"delete called with measurement_name={measurement}")
+#         the_thing = f'_measurement="{measurement}"'
+#         try:
+#             self.delete_api.delete(fromtime, totime, the_thing, bucket, org)
+#         except Exception as e:
+#             print("FIXME in on_bplist influxdb support")
 
 
 def parse_bplist(bplist):
@@ -229,7 +231,7 @@ def do_main():
 
     rtinfo = opennetem_runtime.opennetem_runtime()
 
-    foo = influxdb_writer()
+    # foo = influxdb_writer()
 
     # results = ping_search3(client, rtinfo)
     # print(json.dumps(results, indent=2))
@@ -272,6 +274,7 @@ def do_main():
         num_measurements = 0
         measurement_interval = 5
         done = False
+        influxdb_support = utilities.influxdb_support()
 
         while not done:
             if timeouts>=max_timeouts:
@@ -292,7 +295,7 @@ def do_main():
 
             if last_futures_len != len(futures):
                 last_futures_len = len(futures)
-                print("resetting timeouts location 1")
+                print("on_bplist resetting timeouts location 1")
                 timeouts = 0
 
             to_remove = []
@@ -310,11 +313,19 @@ def do_main():
                     # Re-raise any issues from the called function
                     future.result()
 
-                    print("resetting timeouts location 2")
+                    print("on_bplist resetting timeouts location 2")
                     timeouts = 0
 
-                    all_ret = foo.write_value(future.result())
+                    print(f"on_bplist future.result() to write is: {future.result()}")
+                    # on_bplist future.result() to write is: [{'measurement': 'bplist', 'fields': {'value': 27}, 'tags': {'node': 'node_b', 'src_node': 1, 'src_service': 2, 'dst_node': 5, 'dst_service': 1}},
+                    #                                         {'measurement': 'bplist', 'fields': {'value': 27}, 'tags': {'node': 'node_b', 'src_node': 1, 'src_service': 2, 'dst_node': 5, 'dst_service': 1}},
+                    #                                         {'measurement': 'bplist', 'fields': {'value': 0}, 'tags': {'node': 'node_a', 'src_node': 1, 'src_service': -1, 'dst_node': 5, 'dst_service': -1}}]
 
+                    # all_ret = foo.write_value(future.result())
+#     def write_value(self, measurement_name, measurement_val, tags_dict = {}, other_fields_dict = {}):
+                    for element in future.result():
+                        influxdb_support.write_value(element['measurement'], element['fields']['value'],
+                                                     tags_dict = element['tags'])
                     to_remove += [future]
 
                 for f in to_remove:

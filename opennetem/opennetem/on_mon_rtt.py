@@ -11,86 +11,8 @@ import opennetem.runtime as opennetem_runtime
 import ipaddress
 import datetime
 import time
-
-import influxdb_client_3, os, time
-from influxdb_client_3 import InfluxDBClient3, Point, WritePrecision
-# from influxdb_client_3.client.write_api import SYNCHRONOUS
-
-
-class influxdb_writer(object):
-    def __init__(self):
-        # token = os.environ.get("INFLUXDB_TOKEN")
-        self.token = "9Q3OsSe5OFZBb0EWUVzcmERy80ZPI8yHORRs14dXGQmoZ0ySOGcShf3vlbZWlAebN3X_2vvO3wy_lQmWL7M71A=="
-        self.org = "netem"
-        # self.url = "http://monitor-influxdb-1:8086"
-        self.url = "http://localhost:8086"
-
-        self.client = influxdb_client_3.InfluxDBClient3(host=self.url,
-                                                        token=self.token,
-                                                        org=self.org,
-                                                        database="netem")
-
-        # self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
-    
-
-    def write_value(self, ping_table_data):
-        all_ret = []
-
-        # print(f"Writing result value: {ping_table_data}")
-        for res in ping_table_data:
-            dictionary = {"measurement": "latency_table",
-                          "time": res["start_time"],
-                          "tags": {"send_time":     res["start_time"],
-                                   "source_name":   res["source"],
-                                   "dest_name":     res["destination_name"],
-                                   "forward":       res["source"] < res["destination_name"],
-                                   "network_name":  f"{res['source']}__{res['destination_name']}",
-                                   "network_name2": res['network_name']
-                                  },
-                          "fields": {"value": float(res["rtt_avg"])},
-                         }
-            # print(f"One write dictionary is: {dictionary}")
-            try:
-                # ret = self.client.write(bucket="netem", org="netem", record=dictionary)
-                ret = self.client.write(record=dictionary)
-                all_ret += [ret]
-            except Exception as e:
-                # print(f"influxdb write error: {e}")
-                all_ret += [None]
-        return (all_ret)
-    
-
-# def ping_one_host(host):
-#     # print(f"pinging {host}")
-#     res = ping(host)
-#     lines = list(res)
-#     # print(lines)
-#     # print(f"type of lines[0] is {type(lines[0])}")
-#     if str(lines[0]).find("Request timed out")>=0:
-#         rtt = {}
-#     else:
-#         rtt = {host, 1.2}
-#     return(rtt)
-
-
-# def ping_search(ipv4Network):
-#     the_hosts = list(ipv4Network.hosts())
-
-#     with concurrent.futures.ThreadPoolExecutor(max_workers=300) as executor:
-#         futures = []
-
-#         # print("Appending futures...")
-#         for host in the_hosts:
-#             futures.append(executor.submit(ping_one_host, host=host.__format__("s")))
-
-#         # print("Now printing results...")
-#         for future in concurrent.futures.as_completed(futures):
-#             if future.result()!={}:
-#                 pass
-#                 print(future.result())
-
-#     return
-
+import opennetem.utilities as utilities
+import logging
 
 def ping_search3(docker_client, rtinfo):
 
@@ -142,17 +64,22 @@ def ping_search3(docker_client, rtinfo):
     return(results)
 
 
-def do_main():
+def do_main(scenario_dir=None):
     client = docker.from_env()
+    print("About to do_logging_config")
+    logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(message)s',
+                    handlers=[logging.FileHandler("on_mon_rtt.log"),
+                              logging.StreamHandler()])
+    
+    mylogger = logging.getLogger("monrtt")
+    mylogger.info("initialized monrtt logger")
 
     rtinfo = opennetem_runtime.opennetem_runtime()
 
-    foo = influxdb_writer()
+    influxdb_support = utilities.influxdb_support()
 
-    # results = ping_search3(client, rtinfo)
-    # print(json.dumps(results, indent=2))
-
-    print("Now doing multiple results")
+    # mylogger.info("Now doing multiple results")
     futures = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=30) as executor:
         next_time = time.time()
@@ -169,6 +96,7 @@ def do_main():
                 done = True
                 continue
 
+            mylogger.info("top of while loop")
             # print(f"time: {time.time()}  next_time: {next_time}  timeouts: {timeouts}")
             if time.time()>=next_time and (max_measurements<=0 or num_measurements<max_measurements):
                 num_measurements += 1
@@ -183,7 +111,7 @@ def do_main():
 
             if last_futures_len != len(futures):
                 last_futures_len = len(futures)
-                print("on_mon_rtt: resetting timeouts from {timeouts} to 0 location 1")
+                # print(f"on_mon_rtt: resetting timeouts from {timeouts} to 0 location 1")
                 timeouts = 0
 
             to_remove = []
@@ -194,6 +122,8 @@ def do_main():
                     time.sleep(1)
                     raise(concurrent.futures._base.TimeoutError())
                 
+                to_remove = []
+
                 for future in concurrent.futures.as_completed(futures, timeout=1):
                     # print(f"A future became available from {len(futures)} futures; future has {len(future.result())} results.")
                     # print(future.results())
@@ -217,8 +147,35 @@ def do_main():
                     #   ...
                     # ]
 
-                    all_ret = foo.write_value(future.result())
+                    # WAS THIS all_ret = foo.write_value(future.result())
 
+                    for res in future.result():
+                        # dictionary = {"measurement": "latency_table",
+                        #   "time": res["start_time"],
+                        #   "tags": {"send_time":     res["start_time"],
+                        #            "source_name":   res["source"],
+                        #            "dest_name":     res["destination_name"],
+                        #            "forward":       res["source"] < res["destination_name"],
+                        #            "network_name":  f"{res['source']}__{res['destination_name']}",
+                        #            "network_name2": res['network_name']
+                        #           },
+                        #   "fields": {"value": float(res["rtt_avg"])},
+                        #  }
+                        # print(f"One write dictionary is: {dictionary}")
+
+                        try:
+                            # ret = self.client.write(bucket="netem", org="netem", record=dictionary)
+                            influxdb_support.write_value("latency_table", float(res["rtt_avg"]),
+                                                         tags_dict = {"send_time":     res["start_time"],
+                                                                        "source_name":   res["source"],
+                                                                        "dest_name":     res["destination_name"],
+                                                                        "forward":       res["source"] < res["destination_name"],
+                                                                        "network_name":  f"{res['source']}__{res['destination_name']}",
+                                                                        "network_name2": res['network_name']},
+                                                         other_fields_dict={"time": res["start_time"]})
+                        except Exception as e:
+                            print(f"influxdb write error: {e}")
+                    
                     to_remove += [future]
 
                 for f in to_remove:

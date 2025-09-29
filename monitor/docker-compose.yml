@@ -71,7 +71,8 @@ services:
 
 
   influxdb:
-    image: influxdb:2.7.12
+    #    image: influxdb:2.7.12
+    image: influxdb:latest
     volumes:
       - "./influxdb2:/etc/influxdb2"
       - "monitor_influxdb-data:/var/lib/influxdb2"
@@ -86,6 +87,8 @@ services:
 
   utilities:
     image: netem_utilities
+    volumes:
+      - "./utilities:/usr/local/netem_utilities"
     ports:
       - "9080:9080"
     labels:

@@ -7,10 +7,12 @@ RUN apt -y update
 #COPY ./etc/. /etc
 
 RUN apt -y update
-RUN apt -y install python3
+RUN apt -y install python3 psmisc
 
 COPY ./container_start.sh /netem/bin/container_start.sh
 
-CMD ["/bin/bash", "/netem/bin/container_start.sh"]
+# CMD ["/bin/bash", "/netem/bin/container_start.sh"]
+CMD ["/netem/bin/container_start.sh"]
+# CMD ["tail", "/dev/null"]
 
 

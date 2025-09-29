@@ -88,6 +88,7 @@
 	    {"time": 10, "nodes": ["HOST"],   "command": "on_mon_rtt"},
 	    {"time": 10, "nodes": ["HOST"],   "command": "on_bpstats"},
 	    {"time": 10, "nodes": ["HOST"],   "command": "on_bplist"},
+	    {"time": 10, "nodes": ["HOST"],   "command": "on_mon_sdr"},
         {"time": 10, "nodes": ["node_a"], "command": "nohup bpecho ipn:1.1 >& /netem/mounts/node_a/bpecho.out &"},
         {"time": 10, "nodes": ["node_b"], "command": "nohup bpecho ipn:2.1 >& /netem/mounts/node_b/bpecho.out &"},
         {"time": 10, "nodes": ["node_c"], "command": "nohup bpecho ipn:3.1 >& /netem/mounts/node_c/bpecho.out &"},

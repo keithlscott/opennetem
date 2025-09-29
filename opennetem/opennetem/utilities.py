@@ -52,6 +52,10 @@ class influxdb_support(object):
             ret = self.write_api.write(bucket="netem", org="netem", record=dictionary)
         except Exception as e:
             logger.warning(f"Error writing to influxdb: {e}")
+            logger.warning(f"  name:  {measurement_name}")
+            logger.warning(f"  val:   {measurement_val}")
+            logger.warning(f"  tags:  {tags_dict}")
+            logger.warning(f"  other: {other_fields_dict}")
 
 
     # delete_api.delete('1970-01-01T00:00:00Z', '2050-04-27T00:00:00Z', '_measurement="network_names"', bucket="netem", org="netem")

@@ -62,5 +62,6 @@ COPY killm /usr/local/bin/killm
 COPY ./etc/. /etc
 COPY ./container_start.sh /netem/bin/container_start.sh
 
-CMD ["/bin/bash", "/netem/bin/container_start.sh"]
+#CMD ["/bin/bash", "/netem/bin/container_start.sh"]
+CMD ["/netem/bin/container_start.sh"]
 

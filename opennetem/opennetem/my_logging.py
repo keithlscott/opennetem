@@ -18,9 +18,10 @@ SOURCE_DIR = os.path.dirname(os.path.realpath(__file__))
 # logging.config.fileConfig(f'{SOURCE_DIR}/logging.conf')
 # logger = logging.getLogger("opennetem")
 
-def get_sublogger(name, parent=None):
-    if ( parent==None):
-        return(logging.getLogger("opennetem").getChild(name))
+# def get_sublogger(name, parent=None"):
+def get_sublogger(name, parent="opennetem"):
+    # if ( parent==None):
+    #     return(logging.getLogger("opennetem").getChild(name))
     if type(parent)==type(""):
         return logging.getLogger(parent).getChild(name)
     

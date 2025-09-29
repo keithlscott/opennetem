@@ -349,6 +349,43 @@ class netem_scenario(object):
             for t in self.threads:
                 ret["active_threads"] += t.__name__
 
+    # tc delay could be like:
+    #   Can use (at least) s, ms, us
+    #   30ms
+    def tc_to_seconds(self, tc_delay_string):
+        converts = [["ms", 1_000], ["us", 1_000_000], ["sec", 1], ["s", 1]]
+
+        try:
+            for c in converts:
+                if tc_delay_string.find(c[0])>=0:
+                    return(float(tc_delay_string.replace(c[0], ""))/c[1])
+        except Exception as e:
+            self.logger.info(f"Couldn't convert netem time {tc_delay_string} to seconds.")
+
+        return(0)
+
+
+    def tc_to_bps(self, tc_rate_s):
+            converts = [            ["kbit", 1_000],  ["mbit", 1_000_000], ["gbit", 1_000_000_000],
+                        ["Bit", 1], ["Kbit", 1_000],  ["Mbit", 1_000_000], ["Gbit", 1_000_000_000],
+                        ["bps", 1], ["kbps", 1_000],  ["mbps", 1_000_000], ["gbps", 1_000_000_000],
+                                    ["Kbits", 1_000], ["Mbps", 1_000_000], ["Gbps", 1_000_000_000],
+                        ["Bps", 8], ["KBps", 8_000],  ["MBps", 1_000_000], ["GBps", 1_000_000_000],
+                        ["bit", 1]
+                    ]
+
+            try:
+                    for c in converts:
+                            self.logger.debug(f"trying conversion {c[0]}")
+                            if tc_rate_s.find(c[0])>=0:
+                                    self.logger.debug(f"got it: {c[0]} -- {c[1]}")
+                                    tmp = tc_rate_s.replace(c[0], "")
+                                    return(float(tmp)*c[1])
+            except Exception as e:
+                    self.logger.info(f"Couldn't convert netem rate {tc_rate_s} to seconds.")
+
+            return(0)
+ 
 
     # This is the LinkProcessingThread invoked to change link parameters.
     #
@@ -380,13 +417,22 @@ class netem_scenario(object):
             tmp2['delay'] = "0s"
             tmp2['loss'] = "100%"
 
-        my_logger.info(f"change_link_params {command_row['source']}-{command_row['dest']} executing change: {tmp2.to_dict()}")
-        my_logger.debug(f"change_link_params {command_row['source']}-{command_row['dest']} host interface is {host_interface}")
+        my_logger.debug(f"change_link_params {command_row['source']}-{command_row['dest']} executing change: {tmp2.to_dict()} on i/f: {host_interface}")
 
         result = subprocess.run(f"/usr/sbin/tc qdisc change dev {host_interface} root netem delay {tmp2['delay']} rate {tmp2['rate']} loss {tmp2['loss']}".split(),
                                  capture_output=True)
-        my_logger.info(f"result of link change command {tmp2.to_dict()} for {command_row['source']}-{command_row['dest']}: {result.stdout.decode('utf-8')}")
+        my_logger.info(f"result of link change command {tmp2.to_dict()} for {command_row['source']}-{command_row['dest']}: {result.stdout.decode('utf-8')} = {result}")
         
+        self.logger.info(f"Delay to effect link parameter change: {self.reltime.get_reltime()-command_row['time']}")
+
+        # Now change the loss, delay, and rate into floats to jam them
+        # into influxdb
+        tmp2["loss"] =  float(tmp2["loss"].replace("%", ""))
+        tmp2["delay"] = float(self.tc_to_seconds(tmp2["delay"]))
+        tmp2["rate"] =  float(self.tc_to_bps(tmp2["rate"]))
+
+        my_logger.debug(f"tmp2 is now: {tmp2}")
+
         other_fields = {"source": command_row["source"],
                         "dest":   command_row["dest"],
                         "delay":  tmp2["delay"],
@@ -401,6 +447,10 @@ class netem_scenario(object):
         return
 
 
+    def write_comment_to_influxdb(self, comment):
+        self.influxdb_support.write_value("comments", comment)
+
+        
     def update_topology_image(self) -> None:
         """Write the current topology image to influxdb if necessary."""
 
@@ -757,7 +807,7 @@ class netem_scenario(object):
 
             self.update_topology_image()
 
-            time.sleep(min(time_needed,1)+WAIT_TIME_THRESHOLD)
+            time.sleep(max(0, min(time_needed,1))+WAIT_TIME_THRESHOLD)
         
         self.logger.info(f"Joining cmd_processing threads ({len(self.command_threads)})")
         self.join_threads(self.command_threads)
